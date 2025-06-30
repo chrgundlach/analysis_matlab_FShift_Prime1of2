@@ -1,4 +1,4 @@
-% Script for analyzing EEG data from SSVEP_FShiftPerIrr
+% Script for analyzing EEG data from SSVEP_FShift_Prime1of2
 %
 %
 % (c)    2015,2024 - C. Gundlach
@@ -21,7 +21,7 @@ p.exp_name=         'SSVEP_FShiftPerIrr';
 p.subs=             arrayfun(@(x) sprintf('%02.0f',x),1:60,'UniformOutput',false)';
 % from 4 onwards: same design
 % p.subs2use=         [6:13 16:18];%
-p.subs2use=         [2];%
+p.subs2use=         [5:7];%
 p.part=             {'_1';'_2';'_3'};
 % p.events =          {[10 11 12]; ... %RDK1 + RDK2 attended; 
 %                     [20 21 22]; ... %RDK2 + RDK3 attended

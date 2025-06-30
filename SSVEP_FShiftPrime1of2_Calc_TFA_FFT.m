@@ -10,7 +10,7 @@ F.PathInSCADS           = fullfile(F.Pathlocal, 'eeg\SCADS\');
 F.PathOut               = fullfile(F.Pathlocal, 'eeg\tfa\'); % with FWHM 0.5
 F.subjects              = arrayfun(@(x) sprintf('%02.0f',x),1:70,'UniformOutput',false)';
 % F.sub2use               = [6:13 15:18];%:53;
-F.sub2use               = [2:4];%
+F.sub2use               = [5:7];%
 
 % changed experiment from participant 22 onwards (stimuli isoluminant to background
 
@@ -48,12 +48,12 @@ for i_sub = 1:numel(F.sub2use)
     behavior = load(fullfile(F.PathInBehavior,t.files(t.idx).name));
     
     % select subset of trials
-    t.alltrials = 1:F.TotTrialNum; % vector with all trials
-    t.alltrials(~(Preprocessing.PreProc.trial_blink & Preprocessing.PreProc.trial_eyemov & Preprocessing.PreProc.trial_SCADS))=[];
-    t.trialnumremapped = linspace(0,1,F.TotTrialNum); % map num of trials to [0 1]
-    t.idx = find(ismember(... % find trials that fall in the range of F.Trials2Consider
-        t.alltrials, find(t.trialnumremapped >= F.Trials2Consider(1) & t.trialnumremapped <= F.Trials2Consider(2))));
-    EEG = pop_select(EEG,'trial',t.idx); % only select those trials    
+%     t.alltrials = 1:F.TotTrialNum; % vector with all trials
+%     t.alltrials(~(Preprocessing.PreProc.trial_blink & Preprocessing.PreProc.trial_eyemov & Preprocessing.PreProc.trial_SCADS))=[];
+%     t.trialnumremapped = linspace(0,1,F.TotTrialNum); % map num of trials to [0 1]
+%     t.idx = find(ismember(... % find trials that fall in the range of F.Trials2Consider
+%         t.alltrials, find(t.trialnumremapped >= F.Trials2Consider(1) & t.trialnumremapped <= F.Trials2Consider(2))));
+%     EEG = pop_select(EEG,'trial',t.idx); % only select those trials    
     
     % select certain epochs
     t.idx = [EEG.event(ismember([EEG.event.type],unique(cell2mat(F.trigger)))).epoch];
