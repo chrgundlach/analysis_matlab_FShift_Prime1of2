@@ -7,7 +7,7 @@ F.Subs                  = arrayfun(@(x) sprintf('%02.0f',x),1:70,'UniformOutput'
 % changed experiment from participant 22 onwards (stimuli isoluminant to
 % background and used other frequencies
 % participant 42 has lower trial number
-F.Subs2use              = [1:7];
+F.Subs2use              = [1:10];
                         
 F.TFA.baseline          = [-500 -250];
 
@@ -937,7 +937,7 @@ pl.conlabel = pl.con2plot;
 pl.col = pl.concols;
 pl.col2 = [0.6 0.6 0.6];
 pl.line = {'-';'-';'-'};
-figure('Position',[100 100 1000 700]);
+figure('Position',[100 100 800 500]);
 subplot(8,1,[1:5])
 h.pl = {}; h.plsem=[];  h.plm = []; h.pls = []; h.plst = [];
 for i_con = 1:numel(pl.conlabel)
@@ -984,6 +984,9 @@ for i_con = 1:numel(pl.conlabel)
     h.pls{i_con}=plot(TFA.time(t.time_rt_i(1):t.time_rt_i(2)), pl.sigdata,...
         'Color',pl.col{i_con},'LineWidth',6);
     
+    % add text
+    text(pl.xlims(1)+diff(pl.xlims)*0.01,i_con,[pl.conlabel{i_con} ' vs 0'],'FontSize',8)
+    
 end
 
 for i_diff = 1:size(t.diffs,1)
@@ -1005,6 +1008,9 @@ for i_diff = 1:size(t.diffs,1)
         'Color',pl.col{t.diffs(i_diff,1)},'LineWidth',6);
     h.pls{t.idx}=plot(TFA.time(t.time_rt_i(1):t.time_rt_i(2)), pl.sigdata,...
         'Color',pl.col{t.diffs(i_diff,2)},'LineWidth',3);
+
+    % add text
+    text(pl.xlims(1)+diff(pl.xlims)*0.01,t.idx,[pl.conlabel{t.diffs(i_diff,1)} ' vs ' pl.conlabel{t.diffs(i_diff,2)}],'FontSize',8)
     
 end
 xlabel('time in ms')

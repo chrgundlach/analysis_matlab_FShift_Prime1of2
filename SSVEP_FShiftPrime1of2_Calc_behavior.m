@@ -6,7 +6,7 @@ p.path =                '\\smbone.dom.uni-leipzig.de\FFL\AllgPsy\experimental_da
 p.subs=                 arrayfun(@(x) sprintf('%02.0f',x),1:70,'UniformOutput',false)';
 % p.subs2use=             [1:13 15:21];% 
 % changed experiment from participant 22 onwards (stimuli isoluminant to background
-p.subs2use=             [1:7];%
+p.subs2use=             [1:10];%
 p.responsewin =         [0.2 1]; % according to p.targ_respwin from run_posnalpha
 
 p.eventtype =           {'target';'distractor'};
