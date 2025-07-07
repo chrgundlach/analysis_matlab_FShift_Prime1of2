@@ -11,7 +11,7 @@ F.Subs2use              = [1:10];
                         
 F.TFA.baseline          = [-500 -250];
 
-F.SSVEP_Freqs           = [17 20 23]; % sub 22 onwars
+F.SSVEP_Freqs           = [17 20 23]; 
 F.RDK_pos               = [0 0 0];
 F.RDK_pos_label         = {'center';'center';'center'};
 
@@ -109,7 +109,7 @@ pl.elec2plot_i=cellfun(@(y) ...
 % pl.time2plot = [1];
 pl.time2plot = [1];
 pl.sub2plot = 1:numel(F.Subs2use);
-pl.sub2plot = find(F.Subs2use<22); % luminance offset
+pl.sub2plot(ismember(F.Subs2use,5))=[]; % participant 5 has no ssveps
 
 
 % extract data
@@ -191,6 +191,46 @@ topoplot(pl.mdata, TFA.electrodes(1:64), ...
 title(sprintf('evoked SSVEP amps for %1.1f +- [%1.1f  %1.1f] Hz | [%1.0f %1.0f]ms', ...
     pl.freq2plot, pl.freqrange, min([TFA.ffttimewin{pl.time2plot}])*1000, max([TFA.ffttimewin{pl.time2plot}])*1000))
 colorbar
+
+
+%% plot Grand Mean FFT data | topoplot for all SSVEP frequencies
+pl.time2plot = [1:3];
+pl.time2plot = [1];
+pl.freq2plot = F.SSVEP_Freqs;
+pl.freqrange=[-0.1 0.1];
+pl.sub2sel = 1:numel(F.Subs2use);
+
+
+t.idx = arrayfun(@(x) dsearchn(TFA.fftfreqs', (pl.freqrange+x)'), pl.freq2plot, 'UniformOutput', false);
+
+% extract data
+pl.data_evo = [];
+for i_freq = 1:numel(t.idx)
+    pl.data_evo(:,i_freq) = squeeze(mean(TFA.fftdata_evo(t.idx{i_freq}(1):t.idx{i_freq}(2),:,:,pl.time2plot,pl.sub2sel),[1 3 4 5]))';
+end
+pl.data_evo(:,end+1)=mean(pl.data_evo,2);
+
+
+figure;
+set(gcf,'Position',[100 100 900 300],'PaperPositionMode','auto')
+
+h = [];
+for i_freq = 1:size(pl.data_evo,2)
+    h.s(i_freq) = subplot(1,size(pl.data_evo,2),i_freq);
+    pl.clim = [0 max(pl.data_evo,[],"all")];
+    pl.clim = [0 max(pl.data_evo(:,i_freq),[],"all")];
+    topoplot(pl.data_evo(:,i_freq), TFA.electrodes(1:64), ...
+        'shading', 'interp', 'numcontour', 0, 'maplimits',pl.clim,'conv','on','colormap',fake_parula,...
+        'whitebk','on');
+    if i_freq < size(pl.data_evo,2) 
+        title(sprintf('evo SSVEP %1.1f +- [%1.1f  %1.1f] Hz\n[%1.0f %1.0f]ms', ...
+            pl.freq2plot(i_freq), pl.freqrange, min([TFA.ffttimewin{pl.time2plot}])*1000, max([TFA.ffttimewin{pl.time2plot}])*1000))
+    else
+        title(sprintf('evo SSVEPs | freq averaged\n[%1.0f %1.0f]ms', ...
+             min([TFA.ffttimewin{pl.time2plot}])*1000, max([TFA.ffttimewin{pl.time2plot}])*1000))
+    end
+    colorbar
+end
 
 
 %% plot FFT data modulation | topoplot effects on central stimuli
@@ -732,6 +772,7 @@ pl.base = F.TFA.baseline;
 pl.base_i = dsearchn(TFA.time', pl.base');
 
 pl.sub2plot = 1:numel(F.Subs2use);
+pl.sub2plot(ismember(F.Subs2use,5))=[]; % participant 5 has no ssveps
 
 pl.data_ind = []; pl.data_evo = []; pl.data_ind_bc = []; pl.data_evo_bc = [];
 pl.RDKlabel = {'RDK1';'RDK2';'RDK3'};
@@ -867,6 +908,8 @@ pl.base = F.TFA.baseline;
 pl.base_i = dsearchn(TFA.time', pl.base');
 
 pl.sub2plot = 1:numel(F.Subs2use);
+pl.sub2plot(ismember(F.Subs2use,5))=[]; % participant 5 has no ssveps
+
 
 pl.data_ind = []; pl.data_evo = []; pl.data_ind_bc = []; pl.data_evo_bc = [];
 pl.RDKlabel = {'RDK1';'RDK2';'RDK3'};
@@ -912,7 +955,7 @@ pl.data = squeeze(mean(pl.data_evo_bc,[3]));
 t.time_rt = pl.time_post;
 t.time_rt_i = dsearchn(TFA.time', t.time_rt');
 
-t.permut_n = 1000;
+t.permut_n = 5000;
 clear cluster_runt timecourse_runt
 
 % run cluster correction for tests against zero
