@@ -14,14 +14,15 @@ p.bdf_path=         [p.path 'eeg\raw\'];
 p.set_path=         [p.path 'eeg\set\'];
 p.epoch_path=       [p.path 'eeg\epoch\'];
 p.scads_path=       [p.path 'eeg\SCADS\'];
-p.chanlocs_path=    'C:\Users\psy05cvd\Dropbox\work\matlab\Auswertungsskripte\Analyzer_G\ChanLocs\BioSemi64_1020.epf';
+p.chanlocs_path=    'C:\Dropboxdata\Dropbox\work\matlab\Auswertungsskripte\Analyzer_G\ChanLocs\BioSemi64_1020.epf';
+% p.chanlocs_path=    'C:\Users\psy05cvd\Dropbox\work\matlab\Auswertungsskripte\Analyzer_G\ChanLocs\BioSemi64_1020.epf';
 % p.chanlocs_path=    'C:\Users\EEG\Documents\MATLAB\lab_library\BS_Chanlocs\BioSemi64_1020.epf';
 p.mean_path=        [p.path 'EEG\mean\'];
 p.exp_name=         'SSVEP_FShiftPerIrr';
 p.subs=             arrayfun(@(x) sprintf('%02.0f',x),1:60,'UniformOutput',false)';
 % from 4 onwards: same design
 % p.subs2use=         [6:13 16:18];%
-p.subs2use=         [10];%
+p.subs2use=         [22];%
 p.part=             {'_1';'_2';'_3'};
 % p.events =          {[10 11 12]; ... %RDK1 + RDK2 attended; 
 %                     [20 21 22]; ... %RDK2 + RDK3 attended

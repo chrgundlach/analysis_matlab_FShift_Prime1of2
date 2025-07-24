@@ -7,7 +7,7 @@ F.Subs                  = arrayfun(@(x) sprintf('%02.0f',x),1:70,'UniformOutput'
 % changed experiment from participant 22 onwards (stimuli isoluminant to
 % background and used other frequencies
 % participant 42 has lower trial number
-F.Subs2use              = [1:10];
+F.Subs2use              = [1:14 16:22]; % no sub 15
                         
 F.TFA.baseline          = [-500 -250];
 
@@ -86,7 +86,7 @@ pl.pcorrect = [0 abs(log10([0.5 0.25 0.1 0.05 0.01 0.001 0.0001 0.00001]))];
 pl.elec2plot = {'P5';'P7';'P9';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'P8';'P10';'PO4';'PO8';'O2';'I2'};
 % pl.elec2plot = {'P6';'P8';'P10';'PO4';'PO8';'O2';'I2';'POz';'Oz';'Iz';'O1'};
 % pl.elec2plot = {'P5';'P7';'P9';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'O2'};
-pl.elec2plot = {'POz';'O1';'Oz';'I2';'Iz'};
+pl.elec2plot = {'POz';'O1';'Oz';'O2';'Iz'};
 % pl.elec2plot = {'P8';'P10';'PO8';'PO3';'POz';'Oz';'O1'};
 % pl.elec2plot = {'P7';'P9';'PO7';'PO2';'POz';'Oz';'O2'};
 
@@ -212,7 +212,7 @@ pl.data_evo(:,end+1)=mean(pl.data_evo,2);
 
 
 figure;
-set(gcf,'Position',[100 100 900 300],'PaperPositionMode','auto')
+set(gcf,'Position',[100 100 1100 300],'PaperPositionMode','auto')
 
 h = [];
 for i_freq = 1:size(pl.data_evo,2)
@@ -299,7 +299,7 @@ for i_con = 1:size(t.data_evo_coll_bc_m,2)
         'shading', 'interp', 'numcontour', 0, 'maplimits',pl.clim,'conv','off','colormap',flipud(cbrewer2('RdBu')),...
         'whitebk','on');
     title(sprintf('evoked SSVEP mod | %s\n[%1.0f %1.0f]ms', ...
-        pl.conlabel{i_con}, minmax([TFA.ffttimewin{pl.time2plot}])*1000))
+        pl.conlabel{i_con}, bounds([TFA.ffttimewin{pl.time2plot}])*1000))
     colorbar
 end
 
@@ -457,7 +457,7 @@ R_Mat.all = [{'amplitude_induced','amplitude_evoked','modulation_induced','modul
 R_Mat.all_table = cell2table(R_Mat.all(2:end,:), "VariableNames",R_Mat.all(1,:));
 
 
-t.path = 'C:\Users\psy05cvd\Dropbox\work\R-statistics\experiments\ssvep_fshiftprime1of2\data_in';
+t.path = 'C:\Dropboxdata\Dropbox\work\R-statistics\experiments\ssvep_fshiftprime1of2\data_in';
 % t.path = 'C:\Users\EEG\Documents\R\Christopher\analysis_R_ssvep_fshift_perirr\data_in';
 t.datestr = datestr(now,'mm-dd-yyyy_HH-MM');
 % write to textfile
@@ -635,6 +635,8 @@ for i_con = 1:size(pl.data,3)
     subplot(size(pl.data,3),2,1+2*(i_con-1))
     imagesc(TFA.time(pl.xlims_i(1):pl.xlims_i(2)),pl.freqlabel,pl.data(:,:,i_con),pl.clims1(i_con,:))
     colormap(gca, fake_parula) % magma, viridis, plasma, parula, fake_parula, jet, inferno, cbrewer2('RdBu'),flipud(cbrewer2('RdBu'))
+    % colormap(gca, "turbo") % magma, viridis, plasma, parula, fake_parula, jet, inferno, cbrewer2('RdBu'),flipud(cbrewer2('RdBu'))
+    
     set(gca,'YDir','normal')
     if i_con == 1
         title(sprintf('TFA-amplitude | raw | induced | %s\n for channel [%s]',pl.con2plot{i_con}, vararg2str(pl.elec2plot)), ...
@@ -661,6 +663,10 @@ for i_con = 1:size(pl.data,3)
     subplot(size(pl.data,3),2,2+2*(i_con-1))
     imagesc(TFA.time(pl.xlims_i(1):pl.xlims_i(2)),pl.freqlabel,pl.data(:,:,i_con),pl.clims1(i_con,:))
     colormap(gca, fake_parula) % magma, viridis, plasma, parula, fake_parula, jet, inferno, cbrewer2('RdBu'),flipud(cbrewer2('RdBu'))
+    % colormap(gca, "turbo") % magma, viridis, plasma, parula, fake_parula, jet, inferno, cbrewer2('RdBu'),flipud(cbrewer2('RdBu'))
+    % colormap(gca, plasma) % magma, viridis, plasma, parula, fake_parula, jet, inferno, cbrewer2('RdBu'),flipud(cbrewer2('RdBu'))
+    
+
     set(gca,'YDir','normal')
     if i_con == 1
         title(sprintf('TFA-amplitude | raw | corrected | evoked \n for channel [%s]', vararg2str(pl.elec2plot)), ...
@@ -1064,3 +1070,204 @@ legend('boxoff')
 ylim(pl.sign_y([1 end])+[-1 1])
 xlim(pl.xlims)
 
+
+%% running t-tests ans cluster correction | other contrasts
+% plotting parameters
+% pl.elec2plot = {'Oz';'Iz'};
+% pl.elec2plot = {'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';
+% pl.elec2plot = {'P9';'P10';'PO7';'PO8';'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';% vis alpha II
+pl.elec2plot = {'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge';
+% cluster analysis
+% pl.elec2plot = {TFA.electrodes(1:64).labels}';
+% pl.elec2plot_i=logical(sum(cell2mat(cellfun(@(x) startsWith({TFA(1).electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1));
+pl.elec2plot_i=logical(sum(cell2mat(cellfun(@(x) strcmpi({TFA.electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1));
+
+pl.contrasts = {
+    {{'primed','nonprimed'};{'not attended'}},'Selectivity ((P+NP)-U)';
+    {{'primed'};{'nonprimed'}},'Prime (P-NP)';
+    {{'primed','nonprimed','not attended'};{[]}},'Total Activity (P+NP+U)';
+    };
+
+pl.freqrange=[-0.05 0.05];
+
+pl.xlims=[-1000 1800]; % index time 2 plot
+pl.xlims_i = dsearchn(TFA.time', pl.xlims');
+
+pl.time_post = [0 1800];
+
+pl.base = F.TFA.baseline;
+% pl.base = [-750 -250];
+pl.base_i = dsearchn(TFA.time', pl.base');
+
+pl.sub2plot = 1:numel(F.Subs2use);
+pl.sub2plot(ismember(F.Subs2use,5))=[]; % participant 5 has no ssveps
+
+
+pl.data_ind = []; pl.data_evo = []; pl.data_ind_bc = []; pl.data_evo_bc = [];
+pl.RDKlabel = {'RDK1';'RDK2';'RDK3'};
+pl.RDKidx = [1 2 3];
+
+pl.con2plot = {'primed';'nonprimed';'not attended'}; %F.conRDKprimed_label(1,:)
+% pl.concols = num2cell([255 133 4; 41 60 74; 25 138 131]'./255,1);
+pl.concols = num2cell([255 40 40; 40 180 40; 180 40 180]'./255,1);
+
+
+% extract data
+for i_sub = 1:numel(pl.sub2plot)
+    t.fidx = cell2mat(arrayfun(@(x) dsearchn(TFA.frequency', x+pl.freqrange'),[TFA.RDK(pl.sub2plot(i_sub)).RDK(pl.RDKidx).freq],'UniformOutput',false));
+    pl.freqlabel = TFA.frequency(t.fidx(1,1):t.fidx(2,1))-TFA.RDK(pl.sub2plot(i_sub)).RDK(1).freq;
+    for i_RDK = 1:size(t.fidx,2)
+        for i_con = 1:numel(pl.con2plot)
+            % which condition
+            t.cidx = strcmp(F.conRDKprimed_label(:,i_RDK),pl.con2plot{i_con});
+            % raw
+            pl.data_ind(:,i_con,i_RDK,i_sub) = ...
+                squeeze(mean(TFA.data_ind(t.fidx(1,i_RDK):t.fidx(2,i_RDK),:,pl.elec2plot_i,t.cidx ,pl.sub2plot(i_sub)),[3,1]));
+            pl.data_evo(:,i_con,i_RDK,i_sub) = ...
+                squeeze(mean(TFA.data_evo(t.fidx(1,i_RDK):t.fidx(2,i_RDK),:,pl.elec2plot_i,t.cidx ,pl.sub2plot(i_sub)),[3,1]));
+            % baseline corrected
+            pl.data_ind_bc(:,i_con,i_RDK,i_sub) = ...
+                100*(...
+                bsxfun(@rdivide, pl.data_ind(:,i_con,i_RDK,i_sub), ...
+                squeeze(mean(TFA.data_ind(t.fidx(1,i_RDK):t.fidx(2,i_RDK),pl.base_i(1):pl.base_i(2),pl.elec2plot_i,t.cidx ,pl.sub2plot(i_sub)),[3,1,2]))')...
+                -1);
+            pl.data_evo_bc(:,i_con,i_RDK,i_sub) = ...
+                100*(...
+                bsxfun(@rdivide, pl.data_evo(:,i_con,i_RDK,i_sub), ...
+                squeeze(mean(TFA.data_evo(t.fidx(1,i_RDK):t.fidx(2,i_RDK),pl.base_i(1):pl.base_i(2),pl.elec2plot_i,t.cidx ,pl.sub2plot(i_sub)),[3,1,2]))')...
+                -1);
+        end
+    end
+end
+
+% figure; plot(mean(pl.data_evo,[3,4]))
+pl.data = nan([size(pl.data_evo_bc,1), size(pl.contrasts,1) size(pl.data_evo_bc,4)]);
+
+% actual calculation of contrasts
+for i_cont = 1:size(pl.contrasts,1)
+    % calculate contrasts as specified
+    % first data
+    t.idx1 = ismember(pl.con2plot,pl.contrasts{i_cont,1}{1});
+    pl.xdata = squeeze(mean(pl.data_evo_bc(:,t.idx1,:,:),[2 3]));
+    % index second data
+    if ~isempty(pl.contrasts{i_cont,1}{2}{1})
+        t.idx2 = ismember(pl.con2plot,pl.contrasts{i_cont,1}{2});
+        pl.ydata = squeeze(mean(pl.data_evo_bc(:,t.idx2,:,:),[2 3]));
+        pl.data(:,i_cont,:) = pl.xdata - pl.ydata;
+    else
+        pl.data(:,i_cont,:) = pl.xdata;
+    end
+end
+
+% running ttests
+t.time_rt = pl.time_post;
+t.time_rt_i = dsearchn(TFA.time', t.time_rt');
+
+t.permut_n = 5000;
+clear cluster_runt timecourse_runt
+
+% run cluster correction for tests against zero
+for i_con = 1:size(pl.data,2)
+    t.data = squeeze(pl.data(t.time_rt_i(1):t.time_rt_i(2),i_con,:));
+    t.nulldata = repmat(squeeze(mean(pl.data(pl.base_i(1):pl.base_i(2),i_con,:),1))',[numel(t.time_rt_i(1):t.time_rt_i(2)),1]);
+    [cluster_runt{i_con}, timecourse_runt{i_con}]=eeg_erpStat_clusterP(t.data,t.nulldata,t.permut_n,2);
+end
+
+% % run cluster correction for diffs against zero
+% t.diffs = [1 2; 1 3; 2 3];
+% for i_diff = 1:size(t.diffs,1)
+%     t.data = squeeze(diff(squeeze(pl.data(t.time_rt_i(1):t.time_rt_i(2),t.diffs(i_diff,:),:)),1,2));
+%     t.nulldata = repmat(diff(squeeze(mean(pl.data(pl.base_i(1):pl.base_i(2),t.diffs(i_diff,:),:),1))),[numel(t.time_rt_i(1):t.time_rt_i(2)),1]);
+%     [cluster_runt{size(pl.data,2)+i_diff}, timecourse_runt{size(pl.data,2)+i_diff}]=eeg_erpStat_clusterP(t.data,t.nulldata,t.permut_n,2);
+% end
+
+pl.mdata = mean(pl.data,3); % mean data
+pl.semdata = std(pl.data,1,3)./sqrt(numel(pl.sub2plot));
+
+pl.conlabel = pl.contrasts(:,2);
+pl.col = pl.concols;
+pl.col2 = [0.6 0.6 0.6];
+pl.line = {'-';'-';'-'};
+figure('Position',[100 100 800 500]);
+subplot(8,1,[1:5])
+h.pl = {}; h.plsem=[];  h.plm = []; h.pls = []; h.plst = [];
+for i_con = 1:numel(pl.conlabel)
+    % data index
+    pl.idx = pl.xlims_i(1):pl.xlims_i(2);
+    
+    % plot SEM as boundary
+    % create data
+    pl.xconf = [TFA.time(pl.idx) TFA.time(pl.idx(end:-1:1))] ;
+    pl.yconf = [pl.mdata(pl.idx,i_con,:)'+pl.semdata(pl.idx,i_con,:)' ...
+        pl.mdata(pl.idx(end:-1:1),i_con,:)'-pl.semdata(pl.idx(end:-1:1),i_con,:)'];
+    % plot
+    h.plsem{i_con} = fill(pl.xconf,pl.yconf,pl.col{i_con}','EdgeColor','none','FaceAlpha',0.3);
+    hold on
+    
+    % plot mean lines    
+    h.plm{i_con}=plot(TFA.time(pl.idx), pl.mdata(pl.idx,i_con,:),'Color',pl.col{i_con},'LineStyle',pl.line{i_con},'LineWidth',2);
+    
+end
+grid on
+set(gca,'XTickLabel',[])
+xlim(pl.xlims)
+ylabel('modulation in %')
+
+% plot lines for significant effects
+pl.sign_y = 1:size(timecourse_runt,2);
+
+subplot(8,1,[6:8])
+
+for i_con = 1:numel(pl.conlabel)
+        
+    % uncorrected
+    pl.sigdata = timecourse_runt{ i_con}.h_raw.*pl.sign_y(i_con);
+    pl.sigdata(timecourse_runt{ i_con}.h_raw==0)=nan;
+    
+    h.pls{i_con}=plot(TFA.time(t.time_rt_i(1):t.time_rt_i(2)), pl.sigdata,...
+        'Color',pl.col2,'LineWidth',6);
+    hold on
+    
+    % corrected
+    pl.sigdata = timecourse_runt{ i_con}.h_corr.*pl.sign_y(i_con);
+    pl.sigdata(timecourse_runt{ i_con}.h_corr==0)=nan;
+    
+    h.pls{i_con}=plot(TFA.time(t.time_rt_i(1):t.time_rt_i(2)), pl.sigdata,...
+        'Color',pl.col{i_con},'LineWidth',6);
+    
+    % add text
+    text(pl.xlims(1)+diff(pl.xlims)*0.01,i_con,[pl.conlabel{i_con} ' vs 0'],'FontSize',8)
+    
+end
+
+% for i_diff = 1:size(t.diffs,1)
+%     t.idx = numel(pl.conlabel)+ i_diff;
+% 
+%     % uncorrected
+%     pl.sigdata = timecourse_runt{t.idx}.h_raw.*pl.sign_y(t.idx);
+%     pl.sigdata(timecourse_runt{ t.idx}.h_raw==0)=nan;
+% 
+%     h.pls{t.idx}=plot(TFA.time(t.time_rt_i(1):t.time_rt_i(2)), pl.sigdata,...
+%         'Color',pl.col2,'LineWidth',6);
+%     hold on
+% 
+%     % corrected
+%     pl.sigdata = timecourse_runt{t.idx}.h_corr.*pl.sign_y(t.idx);
+%     pl.sigdata(timecourse_runt{t.idx}.h_corr==0)=nan;
+% 
+%     h.pls{ t.idx}=plot(TFA.time(t.time_rt_i(1):t.time_rt_i(2)), pl.sigdata,...
+%         'Color',pl.col{t.diffs(i_diff,1)},'LineWidth',6);
+%     h.pls{t.idx}=plot(TFA.time(t.time_rt_i(1):t.time_rt_i(2)), pl.sigdata,...
+%         'Color',pl.col{t.diffs(i_diff,2)},'LineWidth',3);
+% 
+%     % add text
+%     text(pl.xlims(1)+diff(pl.xlims)*0.01,t.idx,[pl.conlabel{t.diffs(i_diff,1)} ' vs ' pl.conlabel{t.diffs(i_diff,2)}],'FontSize',8)
+% 
+% end
+xlabel('time in ms')
+
+legend([h.pls{1:numel(pl.conlabel)}],pl.conlabel,'Location','SouthOutside','Orientation','horizontal')
+legend('boxoff')
+
+ylim(pl.sign_y([1 end])+[-1 1])
+xlim(pl.xlims)

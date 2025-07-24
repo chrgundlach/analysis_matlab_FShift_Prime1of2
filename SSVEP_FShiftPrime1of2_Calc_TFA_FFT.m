@@ -1,6 +1,6 @@
 %% parameters
 clearvars
-F.Pathlocal             = 'E:\work\data\SSVEP_FShift_Probabil\';
+F.Pathlocal             = 'G:\work\data\SSVEP_FShift_Probabil\';
 F.Pathlocal             = '\\smbone.dom.uni-leipzig.de\FFL\AllgPsy\experimental_data\2025_FShift_Prime1of2\';
 
 
@@ -10,7 +10,7 @@ F.PathInSCADS           = fullfile(F.Pathlocal, 'eeg\SCADS\');
 F.PathOut               = fullfile(F.Pathlocal, 'eeg\tfa\'); % with FWHM 0.5
 F.subjects              = arrayfun(@(x) sprintf('%02.0f',x),1:70,'UniformOutput',false)';
 % F.sub2use               = [6:13 15:18];%:53;
-F.sub2use               = [9:10];%
+F.sub2use               = [22];%
 
 % changed experiment from participant 22 onwards (stimuli isoluminant to background
 
@@ -66,7 +66,7 @@ for i_sub = 1:numel(F.sub2use)
     if F.CSD_flag==1
         if  i_sub == 1 % calculate CSD matrix
             try
-                CSD.chanmat=ExtractMontage('C:\Users\psy05cvd\Dropbox\work\matlab\software\toolboxes\CSD\resource\10-5-System_Mastoids_EGI129.csd',{EEG.chanlocs.labels}');
+                CSD.chanmat=ExtractMontage('C:\Dropboxdata\Dropbox\work\matlab\software\toolboxes\CSD\resource\10-5-System_Mastoids_EGI129.csd',{EEG.chanlocs.labels}');
             catch
                 CSD.chanmat=ExtractMontage('C:\Users\EEG\Documents\MATLAB\christopher\general_functions\CSD\resource\10-5-System_Mastoids_EGI129.csd',{EEG.chanlocs.labels}');
             end
