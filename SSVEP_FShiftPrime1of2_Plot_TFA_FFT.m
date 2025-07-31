@@ -7,7 +7,7 @@ F.Subs                  = arrayfun(@(x) sprintf('%02.0f',x),1:70,'UniformOutput'
 % changed experiment from participant 22 onwards (stimuli isoluminant to
 % background and used other frequencies
 % participant 42 has lower trial number
-F.Subs2use              = [1:14 16:22]; % no sub 15
+F.Subs2use              = [1:14 16:23]; % no sub 15
                         
 F.TFA.baseline          = [-500 -250];
 
@@ -59,6 +59,9 @@ for i_sub = 1:numel(F.Subs2use)
         TFA.fftdata_evo = nan([size(temp.tfa.TFA.FFT.data_evo),numel(F.Subs2use)]);
         TFA.ffttimewin = temp.tfa.TFA.FFT.timewin;
         TFA.fftfreqs = temp.tfa.TFA.FFT.freqs;
+
+        TFA.Gabor_FWHM_freq = temp.tfa.TFA.params.gabor_FWHM_freq;
+        TFA.Gabor_FWHM_time = 2*log(2)/(pi*TFA.Gabor_FWHM_freq)*500; % time in ms
     end
     
     % assign data
@@ -480,7 +483,7 @@ t.datestr = datestr(now,'mm-dd-yyyy_HH-MM');
 % pl.elec2plot = {'Oz';'Iz'};
 % pl.elec2plot = {'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';
 % pl.elec2plot = {'P9';'P10';'PO7';'PO8';'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';% vis alpha II
-pl.elec2plot = {'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % as in tango study
+pl.elec2plot = {'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % as in tango study [to be used]
 % cluster analysis
 % pl.elec2plot = {TFA.electrodes(1:64).labels}';
 % pl.elec2plot_i=logical(sum(cell2mat(cellfun(@(x) startsWith({TFA(1).electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1));
@@ -493,6 +496,7 @@ pl.xlims=[-500 2000]; % index time 2 plot
 pl.xlims_i = dsearchn(TFA.time', pl.xlims');
 
 pl.base = F.TFA.baseline;
+% pl.base = [-500 TFA.Gabor_FWHM_time];
 pl.base_i = dsearchn(TFA.time', pl.base');
 
 pl.sub2sel = 1:numel(F.Subs2use);
@@ -573,7 +577,8 @@ cb = colorbar();
 % pl.elec2plot = {'Oz';'Iz'};
 % pl.elec2plot = {'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';
 % pl.elec2plot = {'P9';'P10';'PO7';'PO8';'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';% vis alpha II
-pl.elec2plot = {'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge';
+pl.elec2plot = {'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % as in tango study [to be used]
+pl.elec2plot = {'P7';'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P8';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % as in tango study [to be used]
 % cluster analysis
 % pl.elec2plot = {TFA.electrodes(1:64).labels}';
 % pl.elec2plot_i=logical(sum(cell2mat(cellfun(@(x) startsWith({TFA(1).electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1));
@@ -586,7 +591,9 @@ pl.xlims=[-500 1800]; % index time 2 plot
 pl.xlims_i = dsearchn(TFA.time', pl.xlims');
 
 pl.base = F.TFA.baseline;
-pl.base = [-1000 -250];
+% pl.base = [-1000 -250];
+% pl.base = [-500 TFA.Gabor_FWHM_time];
+
 pl.base_i = dsearchn(TFA.time', pl.base');
 
 pl.sub2plot = 1:numel(F.Subs2use);
@@ -762,7 +769,8 @@ topoplot(find(pl.elec2plot_i),TFA(1).electrodes(1:64),'style','blank','electrode
 % pl.elec2plot = {'Oz';'Iz'};
 % pl.elec2plot = {'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';
 % pl.elec2plot = {'P9';'P10';'PO7';'PO8';'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';% vis alpha II
-pl.elec2plot = {'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge';
+pl.elec2plot = {'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % as in tango study [to be used]
+pl.elec2plot = {'P7';'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P8';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % as in tango study [to be used]
 % cluster analysis
 % pl.elec2plot = {TFA.electrodes(1:64).labels}';
 % pl.elec2plot_i=logical(sum(cell2mat(cellfun(@(x) startsWith({TFA(1).electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1));
@@ -891,12 +899,13 @@ g.draw();
 
 
 
-%% calculate everything with running t-tests ans cluster correction | central
+%% calculate everything with running t-tests and cluster correction | central
 % plotting parameters
 % pl.elec2plot = {'Oz';'Iz'};
 % pl.elec2plot = {'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';
 % pl.elec2plot = {'P9';'P10';'PO7';'PO8';'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';% vis alpha II
-pl.elec2plot = {'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge';
+pl.elec2plot = {'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % as in tango study [to be used]
+% pl.elec2plot = {'P7';'P5';'P9';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P8';'P6';'PO4';'PO8';'P10';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % suppression irrelevant study
 % cluster analysis
 % pl.elec2plot = {TFA.electrodes(1:64).labels}';
 % pl.elec2plot_i=logical(sum(cell2mat(cellfun(@(x) startsWith({TFA(1).electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1));
@@ -911,6 +920,7 @@ pl.time_post = [0 1800];
 
 pl.base = F.TFA.baseline;
 % pl.base = [-750 -250];
+pl.base = [-500 -TFA.Gabor_FWHM_time];
 pl.base_i = dsearchn(TFA.time', pl.base');
 
 pl.sub2plot = 1:numel(F.Subs2use);
@@ -971,6 +981,16 @@ for i_con = 1:size(pl.data,2)
     [cluster_runt{i_con}, timecourse_runt{i_con}]=eeg_erpStat_clusterP(t.data,t.nulldata,t.permut_n,2);
 end
 
+% Bayesian running t-tests against zero
+bayesResults.Zero = nan(numel(t.time_rt_i(1):t.time_rt_i(2)),size(pl.data,2));
+for i_con = 1:size(pl.data,2)
+    t.data = squeeze(pl.data(t.time_rt_i(1):t.time_rt_i(2),i_con,:));
+    for i_time = 1:size(t.data,1)
+        % Bayesian analysis for each time point
+        bayesResults.Zero(i_time,i_con) = bf.ttest(t.data(i_time,:)); % default cauchy prior [sqrt(2)/2]
+    end
+end
+
 % run cluster correction for diffs against zero
 t.diffs = [1 2; 1 3; 2 3];
 for i_diff = 1:size(t.diffs,1)
@@ -979,6 +999,17 @@ for i_diff = 1:size(t.diffs,1)
     [cluster_runt{size(pl.data,2)+i_diff}, timecourse_runt{size(pl.data,2)+i_diff}]=eeg_erpStat_clusterP(t.data,t.nulldata,t.permut_n,2);
 end
 
+% Bayesian running t-tests for diffs
+bayesResults.Diffs = nan(numel(t.time_rt_i(1):t.time_rt_i(2)),size(t.diffs,1));
+for i_diff = 1:size(t.diffs,1)
+    t.data = squeeze(diff(squeeze(pl.data(t.time_rt_i(1):t.time_rt_i(2),t.diffs(i_diff,:),:)),1,2));
+    for i_time = 1:size(t.data,1)
+        % Bayesian analysis for each time point
+        bayesResults.Diffs(i_time,i_diff) = bf.ttest(t.data(i_time,:)); % default cauchy prior [sqrt(2)/2]
+    end
+end
+
+
 pl.mdata = mean(pl.data,3); % mean data
 pl.semdata = std(pl.data,1,3)./sqrt(numel(pl.sub2plot));
 
@@ -986,9 +1017,9 @@ pl.conlabel = pl.con2plot;
 pl.col = pl.concols;
 pl.col2 = [0.6 0.6 0.6];
 pl.line = {'-';'-';'-'};
-figure('Position',[100 100 800 500]);
-subplot(8,1,[1:5])
-h.pl = {}; h.plsem=[];  h.plm = []; h.pls = []; h.plst = [];
+figure('Position',[100 100 800 700]);
+subplot(11,1,[1:5])
+h.pl = {}; h.plsem=[];  h.plm = []; h.pls = []; h.plst = []; h.plbf = [];
 for i_con = 1:numel(pl.conlabel)
     % data index
     pl.idx = pl.xlims_i(1):pl.xlims_i(2);
@@ -1011,10 +1042,11 @@ set(gca,'XTickLabel',[])
 xlim(pl.xlims)
 ylabel('modulation in %')
 
+
 % plot lines for significant effects
 pl.sign_y = 1:size(timecourse_runt,2);
 
-subplot(8,1,[6:8])
+subplot(11,1,[6:8])
 
 for i_con = 1:numel(pl.conlabel)
         
@@ -1062,7 +1094,7 @@ for i_diff = 1:size(t.diffs,1)
     text(pl.xlims(1)+diff(pl.xlims)*0.01,t.idx,[pl.conlabel{t.diffs(i_diff,1)} ' vs ' pl.conlabel{t.diffs(i_diff,2)}],'FontSize',8)
     
 end
-xlabel('time in ms')
+% 
 
 legend([h.pls{1:numel(pl.conlabel)}],pl.conlabel,'Location','SouthOutside','Orientation','horizontal')
 legend('boxoff')
@@ -1070,13 +1102,67 @@ legend('boxoff')
 ylim(pl.sign_y([1 end])+[-1 1])
 xlim(pl.xlims)
 
+xlabel('time in ms')
+
+
+% plot lines running Bayesian tests
+% pl.BFrange=[-inf -10;-10 -3;-3 0;0 3;3 10;10 inf];
+pl.BFrange=[0 1/10;1/10 1/3;1/3 1;1 3;3 10;10 inf];
+t.cols = colormap(gca, flipud(cbrewer2('RdBu'))); % magma, viridis, plasma, parula, fake_parula, jet, inferno, cbrewer2('RdBu'),flipud(cbrewer2('RdBu'))
+t.cols([1 end],:) = [0.2 0.2 0.8; 1 0.2 0.2];
+pl.BFcols = t.cols(linspace(1,size(t.cols,1),size(pl.BFrange,1)),:);
+pl.BFlabels = {'H0++';'H0+';'H0~';'H1~';'H1+';'H1++'};
+pl.sign_y = 1:(size(bayesResults.Zero,2)+size(bayesResults.Diffs,2));
+ 
+subplot(11,1,[9:11])
+for i_con = 1:numel(pl.conlabel)
+    for i_BFrange = 1:size(pl.BFrange,1)
+        pl.bfdata = nan(size(bayesResults.Zero,1),1);
+        pl.bfdata(bayesResults.Zero(:,i_con)>=pl.BFrange(i_BFrange,1)&bayesResults.Zero(:,i_con)<=pl.BFrange(i_BFrange,2))=pl.sign_y(i_con);
+        % plot data
+        h.plbf{i_BFrange}=plot(TFA.time(t.time_rt_i(1):t.time_rt_i(2)), pl.bfdata,...
+            'Color',pl.BFcols(i_BFrange,:),'LineWidth',6);
+        hold on
+    end
+            
+    % add text
+    text(pl.xlims(1)+diff(pl.xlims)*0.01,i_con,[pl.conlabel{i_con} ' vs 0'],'FontSize',8)
+    
+end
+
+for i_diff = 1:size(t.diffs,1)
+    t.idx = numel(pl.conlabel)+ i_diff;
+
+    for i_BFrange = 1:size(pl.BFrange,1)
+        pl.bfdata = nan(size(bayesResults.Diffs,1),1);
+        pl.bfdata(bayesResults.Diffs(:,i_diff)>=pl.BFrange(i_BFrange,1)&bayesResults.Diffs(:,i_diff)<=pl.BFrange(i_BFrange,2))=pl.sign_y(t.idx);
+        % plot data
+        h.plbf{i_BFrange}=plot(TFA.time(t.time_rt_i(1):t.time_rt_i(2)), pl.bfdata,...
+            'Color',pl.BFcols(i_BFrange,:),'LineWidth',6);
+        hold on
+    end
+
+    % add text
+    text(pl.xlims(1)+diff(pl.xlims)*0.01,t.idx,[pl.conlabel{t.diffs(i_diff,1)} ' vs ' pl.conlabel{t.diffs(i_diff,2)}],'FontSize',8)
+    
+end
+% 
+
+legend([h.plbf{1:end}],pl.BFlabels,'Location','SouthOutside','Orientation','horizontal')
+legend('boxoff')
+
+ylim(pl.sign_y([1 end])+[-1 1])
+xlim(pl.xlims)
+
+xlabel('time in ms')
 
 %% running t-tests ans cluster correction | other contrasts
 % plotting parameters
 % pl.elec2plot = {'Oz';'Iz'};
 % pl.elec2plot = {'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';
 % pl.elec2plot = {'P9';'P10';'PO7';'PO8';'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';% vis alpha II
-pl.elec2plot = {'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge';
+pl.elec2plot = {'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % as in tango study [to be used]
+% pl.elec2plot = {'P7';'P5';'P9';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P8';'P6';'PO4';'PO8';'P10';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % suppression irrelevant study
 % cluster analysis
 % pl.elec2plot = {TFA.electrodes(1:64).labels}';
 % pl.elec2plot_i=logical(sum(cell2mat(cellfun(@(x) startsWith({TFA(1).electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1));
@@ -1095,8 +1181,9 @@ pl.xlims_i = dsearchn(TFA.time', pl.xlims');
 
 pl.time_post = [0 1800];
 
-pl.base = F.TFA.baseline;
+% pl.base = F.TFA.baseline;
 % pl.base = [-750 -250];
+pl.base = [-500 -TFA.Gabor_FWHM_time];
 pl.base_i = dsearchn(TFA.time', pl.base');
 
 pl.sub2plot = 1:numel(F.Subs2use);
@@ -1173,6 +1260,16 @@ for i_con = 1:size(pl.data,2)
     [cluster_runt{i_con}, timecourse_runt{i_con}]=eeg_erpStat_clusterP(t.data,t.nulldata,t.permut_n,2);
 end
 
+% Bayesian running t-tests against zero
+bayesResults.Zero = nan(numel(t.time_rt_i(1):t.time_rt_i(2)),size(pl.data,2));
+for i_con = 1:size(pl.data,2)
+    t.data = squeeze(pl.data(t.time_rt_i(1):t.time_rt_i(2),i_con,:));
+    for i_time = 1:size(t.data,1)
+        % Bayesian analysis for each time point
+        bayesResults.Zero(i_time,i_con) = bf.ttest(t.data(i_time,:)); % default cauchy prior [sqrt(2)/2]
+    end
+end
+
 % % run cluster correction for diffs against zero
 % t.diffs = [1 2; 1 3; 2 3];
 % for i_diff = 1:size(t.diffs,1)
@@ -1188,8 +1285,8 @@ pl.conlabel = pl.contrasts(:,2);
 pl.col = pl.concols;
 pl.col2 = [0.6 0.6 0.6];
 pl.line = {'-';'-';'-'};
-figure('Position',[100 100 800 500]);
-subplot(8,1,[1:5])
+figure('Position',[100 100 800 700]);
+subplot(9,1,[1:5])
 h.pl = {}; h.plsem=[];  h.plm = []; h.pls = []; h.plst = [];
 for i_con = 1:numel(pl.conlabel)
     % data index
@@ -1216,7 +1313,7 @@ ylabel('modulation in %')
 % plot lines for significant effects
 pl.sign_y = 1:size(timecourse_runt,2);
 
-subplot(8,1,[6:8])
+subplot(9,1,[6:7])
 
 for i_con = 1:numel(pl.conlabel)
         
@@ -1271,3 +1368,55 @@ legend('boxoff')
 
 ylim(pl.sign_y([1 end])+[-1 1])
 xlim(pl.xlims)
+
+
+% plot lines running Bayesian tests
+% pl.BFrange=[-inf -10;-10 -3;-3 0;0 3;3 10;10 inf];
+pl.BFrange=[0 1/10;1/10 1/3;1/3 1;1 3;3 10;10 inf];
+t.cols = colormap(gca, flipud(cbrewer2('RdBu'))); % magma, viridis, plasma, parula, fake_parula, jet, inferno, cbrewer2('RdBu'),flipud(cbrewer2('RdBu'))
+t.cols([1 end],:) = [0.2 0.2 0.8; 1 0.2 0.2];
+pl.BFcols = t.cols(linspace(1,size(t.cols,1),size(pl.BFrange,1)),:);
+pl.BFlabels = {'H0++';'H0+';'H0~';'H1~';'H1+';'H1++'};
+pl.sign_y = 1:(size(bayesResults.Zero,2));
+ 
+subplot(9,1,[8:9])
+for i_con = 1:numel(pl.conlabel)
+    for i_BFrange = 1:size(pl.BFrange,1)
+        pl.bfdata = nan(size(bayesResults.Zero,1),1);
+        pl.bfdata(bayesResults.Zero(:,i_con)>=pl.BFrange(i_BFrange,1)&bayesResults.Zero(:,i_con)<=pl.BFrange(i_BFrange,2))=pl.sign_y(i_con);
+        % plot data
+        h.plbf{i_BFrange}=plot(TFA.time(t.time_rt_i(1):t.time_rt_i(2)), pl.bfdata,...
+            'Color',pl.BFcols(i_BFrange,:),'LineWidth',6);
+        hold on
+    end
+            
+    % add text
+    text(pl.xlims(1)+diff(pl.xlims)*0.01,i_con,[pl.conlabel{i_con} ' vs 0'],'FontSize',8)
+    
+end
+
+% for i_diff = 1:size(t.diffs,1)
+%     t.idx = numel(pl.conlabel)+ i_diff;
+% 
+%     for i_BFrange = 1:size(pl.BFrange,1)
+%         pl.bfdata = nan(size(bayesResults.Diffs,1),1);
+%         pl.bfdata(bayesResults.Diffs(:,i_diff)>=pl.BFrange(i_BFrange,1)&bayesResults.Diffs(:,i_diff)<=pl.BFrange(i_BFrange,2))=pl.sign_y(t.idx);
+%         % plot data
+%         h.plbf{i_BFrange}=plot(TFA.time(t.time_rt_i(1):t.time_rt_i(2)), pl.bfdata,...
+%             'Color',pl.BFcols(i_BFrange,:),'LineWidth',6);
+%         hold on
+%     end
+% 
+%     % add text
+%     text(pl.xlims(1)+diff(pl.xlims)*0.01,t.idx,[pl.conlabel{t.diffs(i_diff,1)} ' vs ' pl.conlabel{t.diffs(i_diff,2)}],'FontSize',8)
+% 
+% end
+% % 
+
+legend([h.plbf{1:end}],pl.BFlabels,'Location','SouthOutside','Orientation','horizontal')
+legend('boxoff')
+
+ylim(pl.sign_y([1 end])+[-1 1])
+xlim(pl.xlims)
+
+xlabel('time in ms')

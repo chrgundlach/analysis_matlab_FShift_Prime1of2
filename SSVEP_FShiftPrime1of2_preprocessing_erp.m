@@ -1,52 +1,51 @@
-% Script for analyzing EEG data from SSVEP_FShift_Prime1of2
+% Script for analyzing EEG data from SSVEP_FShiftProbabil
 %
 %
-% (c)    2015,2024 - C. Gundlach
+%    2024 - C. Gundlach
 
-% 2016-07-19    added median filter for VEOG/HEOG to account for spiking artifacts
 
 
 %% General Definitions 
 clearvars
-% p.path=             'N:\AllgPsy\experimental_data\2024_FShiftPerIrr\';
-p.path=             '\\smbone.dom.uni-leipzig.de\FFL\AllgPsy\experimental_data\2025_FShift_Prime1of2\';
-p.bdf_path=         [p.path 'eeg\raw\'];
+p.path=             '\\smbone.dom.uni-leipzig.de\FFL\AllgPsy\experimental_data\2024_FShiftPerIrr\';
+p.bdf_path=         '\\smbone.dom.uni-leipzig.de\FFL\AllgPsy\experimental_data\2024_FShiftPerIrr\eeg\raw\';
 p.set_path=         [p.path 'eeg\set\'];
-p.epoch_path=       [p.path 'eeg\epoch\'];
-p.scads_path=       [p.path 'eeg\SCADS\'];
-p.chanlocs_path=    'C:\Dropboxdata\Dropbox\work\matlab\Auswertungsskripte\Analyzer_G\ChanLocs\BioSemi64_1020.epf';
-% p.chanlocs_path=    'C:\Users\psy05cvd\Dropbox\work\matlab\Auswertungsskripte\Analyzer_G\ChanLocs\BioSemi64_1020.epf';
-% p.chanlocs_path=    'C:\Users\EEG\Documents\MATLAB\lab_library\BS_Chanlocs\BioSemi64_1020.epf';
-p.mean_path=        [p.path 'EEG\mean\'];
-p.exp_name=         'SSVEP_FShiftPerIrr';
-p.subs=             arrayfun(@(x) sprintf('%02.0f',x),1:60,'UniformOutput',false)';
-% from 4 onwards: same design
-% p.subs2use=         [6:13 16:18];%
-p.subs2use=         [23];%
-p.part=             {'_1';'_2';'_3'};
-% p.events =          {[10 11 12]; ... %RDK1 + RDK2 attended; 
-%                     [20 21 22]; ... %RDK2 + RDK3 attended
-%                     [30 31 32]}; ... %RDK3 + RDK1 attended
-p.events =          {[10 ]; ... %RDK1 + RDK2 attended; 
-                    [20 ]; ... %RDK2 + RDK3 attended
-                    [30 ]}; ... %RDK3 + RDK1 attended
-                    
-% p.events=           {100; 200};
-p.epoch=            [-1.5 2.5];
-p.epoch2an=         [-1 2];
+p.epoch_path=       [p.path 'eeg\epoch_erp\'];
+p.scads_path=       [p.path 'eeg\SCADS_erp\'];
+% p.chanlocs_path=    ['C:\Users\psy05cvd\Dropbox\work\matlab\Auswertungsskripte\Analyzer_G\ChanLocs\BioSemi64_1020.epf'];
+p.chanlocs_path=    ['C:\Users\EEG\Documents\MATLAB\lab_library\BS_Chanlocs\BioSemi64_1020.epf'];
+p.mean_path=        [p.path 'eeg\mean\'];
+p.subs=             cellfun(@(x) sprintf('%02.0f',x),num2cell(1:60),'UniformOutput', false)';
+% p.subs2use=         [1 3:6 7 9 10 11 12];%  % participant 2,8 measurement cancelled due to bad behavior
+% p.subs2use=         [1:13 15:24];%
+p.subs2use=         [49:52];%
+p.part=             {'1';'2';'3'};
+p.cue =          {[10 11 12 16 17 18 19]; ... %RDK1 attended; RDK1 and RDK2 colors in periphery peri attended + unattended
+                    [20 21 22 26 27 28 29]; ... %RDK2 attended; RDK1 and RDK2 colors in periphery peri attended + unattended
+                    [30 31 32 36 37 38 39]; ... %RDK1 attended; RDK1 and RDK3 colors in periphery peri attended + irrelevant
+                    [40 41 42 46 47 48 49]; ... %RDK2 attended; RDK2 and RDK3 colors in periphery peri attended + irrelevant
+                    [50 51 52 56 57 58 59]; ... %RDK1 attended; RDK2 and RDK3 colors in periphery peri unattended + irrelevant
+                    [60 61 62 66 67 68 69]};    %RDK2 attended; RDK1 and RDK3 colors in periphery peri unattended + irrelevant
+p.events=           {[201] [202]}; % trigger for events in trial (up to two possible)
+p.con1name =        'type';
+p.con1label =       {'target';'distractor'};
+p.cue_epoch=        [-1 3.5];
+p.event_epoch=      [-1 1.5];
+% p.epoch2an=         [-1 3.25]; % not so conservative
+p.epoch2an=         [-0.5 1]; % not so conservative
 p.resample=         256;
 
-p.AnaScriptName=    'SSVEP_FShiftPerIrr_preprocessing';
+p.AnaScriptName=    'SSVEP_FShiftProbabil_preprocessing';
 
 % flags
-ImportFlag=         1; % set to 1 if files have ti be importet from raw .bdf files
+ImportFlag=         0; % set to 1 if files have ti be importet from raw .bdf files
 EpochFlag=          1; % set to 1 if data has to be epoched
 MeanFlag=           0; % set to 1 to create mean files with trials averaged for each subject
 TopoFlag=           0;
 if ImportFlag==0 && EpochFlag==0 && MeanFlag==0 && TopoFlag==0, help(AnaScriptName),return, end
 
 %% Main Script 
-% loop for subjectsee
+% loop for subjects
 for i_sub=1:numel(p.subs2use)
     FileName=sprintf('VP%s',p.subs{p.subs2use(i_sub)});
     if ~MeanFlag || ((MeanFlag && EpochFlag) || (ImportFlag && EpochFlag && MeanFlag) || (MeanFlag && ~TopoFlag)),end
@@ -66,18 +65,18 @@ for i_sub=1:numel(p.subs2use)
         
         % replace boundary trigger by 999999
         if sum(strcmp({EEG.event.type},'boundary'))~=0
-            [EEG.event(strcmp({EEG.event.type},'boundary')).type] = deal('9999999');
+            EEG.event(strcmp({EEG.event.type},'boundary')).type = '9999999';
             for i_ev = 1:numel(EEG.event)
                 EEG.event(i_ev).type = str2num(EEG.event(i_ev).type);
             end
         end
         
-%         % troubleshooting
-%         if any(unique([EEG.event.type])>16128)
-%             t.triggernew = num2cell([EEG.event.type]-16128);
-%             [EEG.event.type]=t.triggernew{:};
-%             [EEG.urevent.type]=t.triggernew{:};
-%         end
+        % troubleshooting
+        if any(unique([EEG.event.type])>16128 & unique([EEG.event.type])~=9999999)
+            t.triggernew = num2cell([EEG.event.type]-16128);
+            [EEG.event.type]=t.triggernew{:};
+            [EEG.urevent.type]=t.triggernew{:};
+        end
         
         % added median filter
         %EEG.data([65 66 67 68],:) = medfilt1(EEG.data([65 66 67 68],:),ceil(EEG.srate/40),length(EEG.data),2);
@@ -87,8 +86,6 @@ for i_sub=1:numel(p.subs2use)
         
         %
 %         figure; pwelch(EEG.data(29,:),EEG.srate*1,EEG.srate/2,256,EEG.srate)
-%         figure; pop_eegplot(EEG,1,1,1)
-%         figure; pwelch(EEG.data(45,1320*256:1324*256),EEG.srate*1,EEG.srate/2,256,EEG.srate)
         
         % check trigger
         trigg.all = unique(cell2mat({EEG.event.type}));
@@ -107,83 +104,84 @@ for i_sub=1:numel(p.subs2use)
     if EpochFlag
         % load
         EEG = pop_loadset('filename',[FileName '.set'], 'filepath', p.set_path);
+        % pop_eegplot(EEG,1,1,1)
+
+        % check trigger
+        t.idx_t = find([EEG.event.type] == 201); % target
+        t.idx_d = find([EEG.event.type] == 202); % target
+        t.freq = {'target' numel(t.idx_t) sum([EEG.event(t.idx_t+1).type]==2048); ...
+            'distractor' numel(t.idx_t) sum([EEG.event(t.idx_d+1).type]==2048)};
         
-        % epoch data
-        EEG = pop_epoch( EEG, num2cell(unique(cell2mat(p.events))), p.epoch, 'epochinfo', 'yes');
+        % epoch data around cue
+        EEG_cue = pop_epoch( EEG, num2cell(unique(cell2mat(p.cue))), p.cue_epoch, 'epochinfo', 'yes');
+
+        % epoch data around event
+        EEG_event = pop_epoch( EEG_cue, num2cell(unique(cell2mat(p.events))), p.event_epoch, 'epochinfo', 'yes');
         
-        % keep track of discarded trials
-        PreProc.trial_nr = 1:numel(EEG.epoch);
-        PreProc.trial_con= nan(1,numel(EEG.epoch));
-        PreProc.trial_blink=true(1,numel(EEG.epoch));
-        PreProc.trial_eyemov=true(1,numel(EEG.epoch));
-        PreProc.trial_SCADS=true(1,numel(EEG.epoch));
-        for i_ep = 1:numel(EEG.epoch)
-            if numel(EEG.epoch(i_ep).eventtype) == 1
-                if isstr(cell2mat(EEG.epoch(i_ep).eventtype))
-                    PreProc.trial_con(i_ep)=str2num(cell2mat(EEG.epoch(i_ep).eventtype));
-                else
-                    PreProc.trial_con(i_ep)=cell2mat(EEG.epoch(i_ep).eventtype);
-                end
-            else
-                if isstr(EEG.epoch(i_ep).eventtype{1})
-                    t.t=cellfun(@str2num,EEG.epoch(i_ep).eventtype);
-                else
-                    t.t=cell2mat(EEG.epoch(i_ep).eventtype);
-                end
-                if isstr(t.t(cell2mat(EEG.epoch(i_ep).eventlatency)==0))
-                    PreProc.trial_con(i_ep)=str2num(t.t(cell2mat(EEG.epoch(i_ep).eventlatency)==0));
-                else
-                    PreProc.trial_con(i_ep)=t.t(cell2mat(EEG.epoch(i_ep).eventlatency)==0);
-                end
-            end
+        % some bookkeeping to keep track of discarded trials
+        PreProc.trial_nr = 1:numel(EEG_event.epoch);
+        PreProc.trial_nrtrialinexp = nan(1,numel(EEG_event.epoch));
+        PreProc.trial_con= nan(1,numel(EEG_event.epoch));
+        PreProc.trial_blink=true(1,numel(EEG_event.epoch));
+        PreProc.trial_eyemov=true(1,numel(EEG_event.epoch));
+        PreProc.trial_SCADS=true(1,numel(EEG_event.epoch));
+        for i_ep = 1:numel(EEG_event.epoch)
+            % which event trigger?
+            t.t=cell2mat(EEG_event.epoch(i_ep).eventtype);
+            t.idx = cell2mat(EEG_event.epoch(i_ep).eventlatency)==0;
+            PreProc.trial_con(i_ep)=t.t(t.idx);
+            % which trial in experiment?
+            PreProc.trial_nrtrialinexp(i_ep) = ...
+                EEG_cue.event([EEG_cue.event.urevent] == EEG_event.epoch(i_ep).eventurevent{t.idx}).epoch;           
         end
+        % first or second event
+        PreProc.trial_nreventintrial = ones(size(PreProc.trial_nrtrialinexp));
+        PreProc.trial_nreventintrial([false diff(PreProc.trial_nrtrialinexp)==0]) = 2;
         
         % create single horizontal and single vertical eye channel by
         % subtracting channels (e.g. VEOG1-VEOG2) from each other to
         % increase SNR of blinks and eye movements
-        EEG = eegF_Bipolarize(EEG);
+        EEG_event = eegF_Bipolarize(EEG_event);
         
         % remove linear drift and offset of EEG signals
-        EEG = eegF_Detrend(EEG,p.epoch2an); % 
+        EEG_event = eegF_Detrend(EEG_event,p.epoch2an); %
+        % pop_eegplot(EEG,1,1,1)
         
         % index trials with blinks and eye movements for later rejection
-        [EEG_temp,Trials2Remove1] = eegF_RemoveBlinks(EEG,65,p.epoch2an,1); % letzte Parameter '1': Artefakte nur markiert
+        [EEG_temp,Trials2Remove1] = eegF_RemoveBlinks(EEG_event,65,p.epoch2an,1); % letzte Parameter '1': Artefakte nur markiert
         PreProc.trial_blink(Trials2Remove1)=false;
-        [EEG_temp,Trials2Remove2] = eegF_RemoveEyeMovements(EEG,[65 66],p.epoch2an,25,1);
+        [EEG_temp,Trials2Remove2] = eegF_RemoveEyeMovements(EEG_event,[65 66],p.epoch2an,25,1);
         PreProc.trial_eyemov(Trials2Remove2)=false;
-        EEG = pop_select( EEG,'trial',find(PreProc.trial_eyemov& PreProc.trial_blink));
+        EEG_event = pop_select( EEG_event,'trial',find(PreProc.trial_eyemov& PreProc.trial_blink));
         
-        % discard non-brain electrodes
-        EEG = pop_select(EEG,'channel',1:64);
-        % load channel info
-        EEG.chanlocs = pop_chanedit(EEG.chanlocs,'load',{p.chanlocs_path,'filetype','besa'});
-        % pop_eegplot(EEG,1,1,1)
+        s
         
         % filter before SCADS (is this a good idea?)
 %         EEG = pop_eegfiltnew(EEG, 0.7, 0, 16*EEG.srate, 0, [], 0);
         
         % run SCADS to statistically detect artifacts
-        [EEG Trials2Del SumData] = SCADS_Pass1(EEG,p.epoch2an,[6 6 15],1);%,[6 5 15]);  % ansonsten SCADS_Pass1()
+        [EEG_event Trials2Del SumData] = SCADS_Pass1(EEG_event,p.epoch2an,[6 6 15],1);%,[6 5 15]);  % ansonsten SCADS_Pass1()
         t.index = find(PreProc.trial_blink & PreProc.trial_eyemov);
         PreProc.trial_SCADS(t.index(Trials2Del))=false;        
         
         % save trials marked as artifacts for potential later inspection
         if ~isempty(Trials2Del)
-            EEG_SCADS = pop_select(EEG, 'trial', Trials2Del);
+            EEG_SCADS = pop_select(EEG_event, 'trial', Trials2Del);
         else
-            EEG_SCADS = EEG;
+            EEG_SCADS = pop_select(EEG_event, 'trial', 1);
         end
         % discard trials indexed as containing artifacts
-        EEG = pop_rejepoch(EEG, EEG.reject.rejmanual, 0);
+        EEG_event = pop_rejepoch(EEG_event, EEG_event.reject.rejmanual, 0);
         % rereference to average reference
-        EEG=pop_reref(EEG,[],'refstate',0);   %
+        EEG_event=pop_reref(EEG_event,[],'refstate',0);   %
+        % pop_eegplot(EEG,1,1,1)
         
         if ~exist(p.scads_path); mkdir(p.scads_path);end
         if ~exist(p.epoch_path); mkdir(p.epoch_path);end
         save([p.scads_path FileName '_Preprocess_summary.mat'],'SumData','PreProc')
         pop_saveset(EEG_SCADS,[FileName '_SCADS.set'],p.scads_path);% Save Data
-        pop_saveset(EEG, 'filename', [FileName '_e.set'], 'filepath', p.epoch_path);
-        clear ('EEG')
+        pop_saveset(EEG_event, 'filename', [FileName '_e.set'], 'filepath', p.epoch_path);
+        clear EEG EEG_event EEG_cue
     end
 end
 
