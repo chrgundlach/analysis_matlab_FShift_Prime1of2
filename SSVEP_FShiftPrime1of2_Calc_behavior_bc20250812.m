@@ -6,20 +6,15 @@ p.path =                '\\smbone.dom.uni-leipzig.de\FFL\AllgPsy\experimental_da
 p.subs=                 arrayfun(@(x) sprintf('%02.0f',x),1:70,'UniformOutput',false)';
 % p.subs2use=             [1:13 15:21];% 
 % changed experiment from participant 22 onwards (stimuli isoluminant to background
-p.subs2use=             [1:14 16:28];% %VP 15 no data
-
-% p.subs2use=             [1:10];% %VP 15 no data
-p.responsewin =         [0.2 1.2]; % according to p.targ_respwin from run_posnalpha
-p.responsewin =         [0.3 1.3]; % according to p.targ_respwin from run_posnalpha
-% p.responsewin =         [0.9 1.3]; % according to p.targ_respwin from run_posnalpha
-p.resprecalcflag =      true; %do recalculation
+p.subs2use=             [1:14 16:27];% %VP 15 no data
+p.responsewin =         [0.2 1]; % according to p.targ_respwin from run_posnalpha
 
 p.eventtype =           {'target';'distractor'};
 p.eventtype2 =          {'target_primed';'target_nonprimed';'distractor'};
 
 
 % p.con1index =           [1 1 2 2];
-% p.con1name =            'pre cue task';s
+% p.con1name =            'pre cue task';
 % p.con1label =           {'attend fixation cross';'attend fixation cross';'attend both rings';'attend both rings'};
 % p.con1label =           {'cross';'cross';'rings';'rings'};
 % p.con2index =           [1 2 1 2];
@@ -43,60 +38,6 @@ for i_sub = 1:numel(p.subs2use)
             temp.index=cell2mat(cellfun(@(x) ~isempty(cell2mat({x})), temp.data_in{i_fi}.resp.experiment,'UniformOutput',false));
             data_in.resp.experiment(temp.index)=temp.data_in{i_fi}.resp.experiment(temp.index);
             data_in.button_presses.experiment(temp.index)=temp.data_in{i_fi}.button_presses.experiment(temp.index);
-        end
-    end
-    % extract aprameter
-    params(i_sub) = temp.data_in{1}.p;
-    %% recalculate events
-    if any(params(i_sub).targ_respwin-(p.responsewin*1000)~=0) & p.resprecalcflag
-        % loop across blocks
-        for i_block = 1:numel(data_in.resp.experiment)
-            % index relevant response button
-            t.buttonidx = data_in.button_presses.experiment{i_block}.keymap_ind == data_in.button_presses.experiment{i_block}.SPACE;
-            % loop across trials
-            for i_trial=1:numel(data_in.resp.experiment{i_block})
-                % index trial data
-                t.trial = data_in.resp.experiment{i_block}(i_trial);
-                % index all button presses
-                t.response = data_in.button_presses.experiment{i_block}.presses{i_trial}(:,t.buttonidx);
-                % index time of button presses
-                t.response_t = data_in.button_presses.experiment{i_block}.presses_t{i_trial}(:,t.buttonidx);
-                % check for events?
-                if any(~isnan(t.trial.eventtype))
-                    t.idx = find(~isnan(t.trial.eventtype));
-                    % loop across events
-                    for i_eve = 1:numel(t.idx)
-                        % index onset times/frames
-                        t.onset_t = t.trial.event_onset_times(t.idx(i_eve));
-                        t.onset_fr = t.trial.event_onset_frames(t.idx(i_eve));
-
-                        % check whether any button press falls within response time window
-                        t.respidx = find(t.response_t > t.onset_t+p.responsewin(1) & t.response_t < t.onset_t+p.responsewin(2));
-                        % calculate RT
-                        t.rt = (t.response_t(t.respidx)-t.onset_t)*1000;
-
-                        % switch between distractor and event
-                        if t.trial.eventtype(i_eve) == 1 % target
-                            % response?
-                            if ~isempty(t.rt)
-                                data_in.resp.experiment{i_block}(i_trial).event_response_type{i_eve}='hit';
-                                data_in.resp.experiment{i_block}(i_trial).event_response_RT(i_eve)=t.rt(1);
-                            else
-                                data_in.resp.experiment{i_block}(i_trial).event_response_type{i_eve}='miss';
-                                data_in.resp.experiment{i_block}(i_trial).event_response_RT(i_eve)=nan;
-                            end
-                        else % distractor
-                            if ~isempty(t.rt)
-                                data_in.resp.experiment{i_block}(i_trial).event_response_type{i_eve}='FA_proper';
-                                data_in.resp.experiment{i_block}(i_trial).event_response_RT(i_eve)=t.rt(1);
-                            else
-                                data_in.resp.experiment{i_block}(i_trial).event_response_type{i_eve}='CR';
-                                data_in.resp.experiment{i_block}(i_trial).event_response_RT(i_eve)=nan;
-                            end
-                        end
-                    end
-                end
-            end
         end
     end
     

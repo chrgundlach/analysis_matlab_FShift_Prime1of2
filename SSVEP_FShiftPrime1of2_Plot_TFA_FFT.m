@@ -7,7 +7,7 @@ F.Subs                  = arrayfun(@(x) sprintf('%02.0f',x),1:70,'UniformOutput'
 % changed experiment from participant 22 onwards (stimuli isoluminant to
 % background and used other frequencies
 % participant 42 has lower trial number
-F.Subs2use              = [1:14 16:26]; % no sub 15
+F.Subs2use              = [1:14 16:28]; % no sub 15
                         
 F.TFA.baseline          = [-500 -250];
 
@@ -89,7 +89,7 @@ pl.pcorrect = [0 abs(log10([0.5 0.25 0.1 0.05 0.01 0.001 0.0001 0.00001]))];
 pl.elec2plot = {'P5';'P7';'P9';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'P8';'P10';'PO4';'PO8';'O2';'I2'};
 % pl.elec2plot = {'P6';'P8';'P10';'PO4';'PO8';'O2';'I2';'POz';'Oz';'Iz';'O1'};
 % pl.elec2plot = {'P5';'P7';'P9';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'O2'};
-pl.elec2plot = {'POz';'O1';'Oz';'O2';'Iz'};
+% pl.elec2plot = {'POz';'O1';'Oz';'O2';'Iz'};
 % pl.elec2plot = {'P8';'P10';'PO8';'PO3';'POz';'Oz';'O1'};
 % pl.elec2plot = {'P7';'P9';'PO7';'PO2';'POz';'Oz';'O2'};
 
@@ -103,6 +103,7 @@ topoplot([],TFA.electrodes(1:64),'whitebk','on','style','blank','electrodes', 'o
 
 % large center as in tango | periphery: central and lateral 
 pl.elec2plot = {{'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}, 'center'};
+pl.elec2plot = {{'P7';'P5';'P9';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P8';'P6';'PO4';'PO8';'P10';'O2';'I2'} 'center'};
 
 pl.elec2plot_i=cellfun(@(y) ...
     logical(sum(cell2mat(cellfun(@(x) strcmpi({TFA.electrodes.labels},x), y, 'UniformOutput',false)),1)),...
@@ -196,6 +197,7 @@ title(sprintf('evoked SSVEP amps for %1.1f +- [%1.1f  %1.1f] Hz | [%1.0f %1.0f]m
 colorbar
 
 
+
 %% plot Grand Mean FFT data | topoplot for all SSVEP frequencies
 pl.time2plot = [1:3];
 pl.time2plot = [1];
@@ -238,7 +240,7 @@ end
 
 %% plot FFT data modulation | topoplot effects on central stimuli
 pl.time_base = 1;
-pl.time2plot = [2];
+pl.time2plot = [3];
 pl.pos2plot='center';
 pl.freqrange=[-0.1 0.1];
 pl.sub2sel = 1:numel(F.Subs2use);
@@ -297,12 +299,12 @@ pl.conlabel = pl.con2plot;
 for i_con = 1:size(t.data_evo_coll_bc_m,2)
     h.s(i_con) = subplot(2,size(t.data_evo_coll_bc_m,2),i_con);
     pl.clim = [-1 1] *max(abs(t.data_evo_coll_bc_m),[],'all');
-    pl.clim = [-20 20];
+    % pl.clim = [-20 20];
     topoplot(t.data_evo_coll_bc_m(:,i_con), TFA.electrodes(1:64), ...
         'shading', 'interp', 'numcontour', 0, 'maplimits',pl.clim,'conv','off','colormap',flipud(cbrewer2('RdBu')),...
         'whitebk','on');
     title(sprintf('evoked SSVEP mod | %s\n[%1.0f %1.0f]ms', ...
-        pl.conlabel{i_con}, bounds([TFA.ffttimewin{pl.time2plot}])*1000))
+        pl.conlabel{i_con}, [min([TFA.ffttimewin{pl.time2plot}]) max([TFA.ffttimewin{pl.time2plot}])]*1000))
     colorbar
 end
 
@@ -340,7 +342,7 @@ end
 %% extract amplitude values for FFT
 % plotting parameters
 pl.elec2plot = {{'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}, 'center'};
-
+pl.elec2plot = {{'P7';'P5';'P9';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P8';'P6';'PO4';'PO8';'P10';'O2';'I2'}, 'center'};
 
 pl.elec2plot_i=cellfun(@(y) ...
     logical(sum(cell2mat(cellfun(@(x) strcmpi({TFA.electrodes.labels},x), y, 'UniformOutput',false)),1)),...
@@ -464,7 +466,6 @@ t.path = 'C:\Dropboxdata\Dropbox\work\R-statistics\experiments\ssvep_fshiftprime
 % t.path = 'C:\Users\EEG\Documents\R\Christopher\analysis_R_ssvep_fshift_perirr\data_in';
 t.datestr = datestr(now,'mm-dd-yyyy_HH-MM');
 % write to textfile
-% xlswrite(fullfile(t.path,sprintf('FFT_Amp_data_largeclust_%s.csv',t.datestr)),R_Mat.all)
 
 % writetable(R_Mat.all_table,fullfile(t.path,sprintf('FFT_Amp_data_CenterLarge_%s.csv',t.datestr)),'Delimiter',';')
 
@@ -904,8 +905,8 @@ g.draw();
 % pl.elec2plot = {'Oz';'Iz'};
 % pl.elec2plot = {'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';
 % pl.elec2plot = {'P9';'P10';'PO7';'PO8';'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';% vis alpha II
-pl.elec2plot = {'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % as in tango study [to be used]
-% pl.elec2plot = {'P7';'P5';'P9';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P8';'P6';'PO4';'PO8';'P10';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % suppression irrelevant study
+% pl.elec2plot = {'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % as in tango study 
+pl.elec2plot = {'P7';'P5';'P9';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P8';'P6';'PO4';'PO8';'P10';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % suppression irrelevant study[to be used]
 % cluster analysis
 % pl.elec2plot = {TFA.electrodes(1:64).labels}';
 % pl.elec2plot_i=logical(sum(cell2mat(cellfun(@(x) startsWith({TFA(1).electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1));
@@ -1161,8 +1162,8 @@ xlabel('time in ms')
 % pl.elec2plot = {'Oz';'Iz'};
 % pl.elec2plot = {'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';
 % pl.elec2plot = {'P9';'P10';'PO7';'PO8';'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';% vis alpha II
-pl.elec2plot = {'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % as in tango study [to be used]
-% pl.elec2plot = {'P7';'P5';'P9';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P8';'P6';'PO4';'PO8';'P10';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % suppression irrelevant study
+% pl.elec2plot = {'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % as in tango study [to be used]
+pl.elec2plot = {'P7';'P5';'P9';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P8';'P6';'PO4';'PO8';'P10';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % suppression irrelevant study
 % cluster analysis
 % pl.elec2plot = {TFA.electrodes(1:64).labels}';
 % pl.elec2plot_i=logical(sum(cell2mat(cellfun(@(x) startsWith({TFA(1).electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1));
