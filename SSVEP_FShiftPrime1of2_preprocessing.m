@@ -39,7 +39,7 @@ p.resample=         256;
 p.AnaScriptName=    'SSVEP_FShiftPerIrr_preprocessing';
 
 % flags
-ImportFlag=         1; % set to 1 if files have ti be importet from raw .bdf files
+ImportFlag=         0; % set to 1 if files have ti be importet from raw .bdf files
 EpochFlag=          1; % set to 1 if data has to be epoched
 MeanFlag=           0; % set to 1 to create mean files with trials averaged for each subject
 TopoFlag=           0;

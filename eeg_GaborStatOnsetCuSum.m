@@ -183,7 +183,7 @@ pl.bsdata = squeeze(mean(pl.bsdata,2));
 pl.bsci_low  = prctile(pl.bsdata, 2.5, 3);   % lower 2.5% across bootstrap samples
 pl.bsci_high = prctile(pl.bsdata, 97.5, 3);  % upper 97.5%
 
-figure('Position',[100 100 500 500]);
+figure('Position',[100 100 500 300]);
 h.pl = {}; h.plsem=[];  h.plm = []; h.pls = []; h.plst = [];
 for i_con = 1:size(pl.data,2)
     % plot SEM as boundary
@@ -219,7 +219,7 @@ pl.bsdata_shuffle = squeeze(mean(pl.bsdata_shuffle,2));
 pl.bsci_low_shuffle  = prctile(pl.bsdata_shuffle, 2.5, 3);   % lower 2.5% across bootstrap samples
 pl.bsci_high_shuffle = prctile(pl.bsdata_shuffle, 97.5, 3);  % upper 97.5%
 
-figure('Position',[100 100 500 500]);
+figure('Position',[100 100 500 300]);
 h.pl = {}; h.plsem=[];  h.plm = []; h.pls = []; h.plst = [];
 for i_con = 1:size(pl.data,2)
     % plot SEM as boundary

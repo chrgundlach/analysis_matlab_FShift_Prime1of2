@@ -4,22 +4,17 @@ clearvars
 
 %% parameters
 % general parameters
-F.PathIn            = '\\smbone.dom.uni-leipzig.de\FFL\AllgPsy\experimental_data\2024_FShiftPerIrr\EEG\SCADS\'; % with FWHM 0.5
+F.PathIn            = '\\smbone.dom.uni-leipzig.de\FFL\AllgPsy\experimental_data\2025_FShift_Prime1of2\EEG\SCADS\'; % with FWHM 0.5
 F.subjects          = cellfun(@(x) sprintf('%02.0f',x),num2cell(1:60),'UniformOutput', false)';
 % F.subs2use          = [9 10 11 12];%
-F.subs2use          = [1:13 15:52];
+F.subs2use          = [1:14 16:28];
 F.con2an            ={[10 ]; ... %RDK1 attended; RDK1 and RDK2 colors in periphery peri attended + unattended
                     [20 ]; ... %RDK2 attended; RDK1 and RDK2 colors in periphery peri attended + unattended
                     [30 ]; ... %RDK1 attended; RDK1 and RDK3 colors in periphery peri attended + irrelevant
-                    [40 ]; ... %RDK2 attended; RDK2 and RDK3 colors in periphery peri attended + irrelevant
-                    [50 ]; ... %RDK1 attended; RDK2 and RDK3 colors in periphery peri unattended + irrelevant
-                    [60 ]};    %RDK2 attended; RDK1 and RDK3 colors in periphery peri unattended + irrelevant
-F.con2an_label      = {'att RDK1 | RDK3 RDK4';
-    'att RDK2 | RDK3 RDK4';
-    'att RDK1 | RDK3 RDK5';
-    'att RDK2 | RDK4 RDK5';
-    'att RDK1 | RDK4 RDK5';
-    'att RDK2 | RDK3 RDK5'};
+                    };    %RDK2 attended; RDK1 and RDK3 colors in periphery peri unattended + irrelevant
+F.con2an_label      = {'att RDK1 & RDK2';
+    'att RDK2 & RDK3';
+    'att RDK3 & RDK1';};
 
 %% loop across subjects to extract
 for i_sub = 1:numel(F.subs2use)

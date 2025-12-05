@@ -1,7 +1,7 @@
 %% parameters
 clearvars
 F.Pathlocal             = 'E:\work\data\SSVEP_FShift_Probabil\';
-F.Pathlocal             = '\\smbone.dom.uni-leipzig.de\FFL\AllgPsy\experimental_data\2024_FShiftPerIrr\';
+F.Pathlocal             = '\\smbone.dom.uni-leipzig.de\FFL\AllgPsy\experimental_data\2025_FShift_Prime1of2\';
 
 F.PathInEEG             = fullfile(F.Pathlocal, 'eeg\epoch_erp\');
 F.PathInBehavior        = fullfile(F.Pathlocal, 'behavior\');
@@ -10,9 +10,9 @@ F.PathOut               = fullfile(F.Pathlocal, 'eeg\erp\');
 F.subjects              = arrayfun(@(x) sprintf('%02.0f',x),1:60,'UniformOutput',false)';
 % F.sub2use               = [1:13 15:24];%:53;
 % F.sub2use               = [1 3 4 5 6 7 9 10 11 13 15 18 20 21 22 23 24 25];%:53; % for subject 12, 14: eeg and behavior data don't match
-F.sub2use               = [49:52];%:53;
+F.sub2use               = [2:14 16:28];%:53;
 
-F.trigger               = {[201] [202]}; % target distractor
+F.trigger               = {[111] [112] [113]}; % {'target primed';'target nonprimed';'distractor'}
 
 
 F.EEGChans              = 64;
@@ -23,10 +23,7 @@ F.ERP_FiltFreq          = [0 13];
 
 %F.TFAfreqs              = [5:(1/6):40];
 F.conname_within        = 'event_type';
-F.conname_withinlabel   = {'target';'distractor'};
-F.conname_between       = 'stim_luminance';
-F.conname_betweenlabel  = [repmat({'offset_to_bckgrd'},1,numel([1:21])) repmat({'isolum__to_bckgrd'},1,numel([22:80]))];
-
+F.conname_withinlabel   = {'target primed';'target nonprimed';'distractor'};
 
 %% start processing
 %% loop across subjects
@@ -63,8 +60,7 @@ for i_sub = 1:numel(F.sub2use)
     %% do csd transform
     if F.CSD_flag==1
         if  i_sub == 1 % calculate CSD matrix
-            CSD.chanmat=ExtractMontage('C:\Users\psy05cvd\Dropbox\work\matlab\software\toolboxes\CSD\resource\10-5-System_Mastoids_EGI129.csd',{EEG.chanlocs.labels}');
-%             CSD.chanmat=ExtractMontage('C:\Users\EEG\Documents\MATLAB\christopher\general_functions\CSD\resource\10-5-System_Mastoids_EGI129.csd',{EEG.chanlocs.labels}');
+            CSD.chanmat=ExtractMontage('C:\Dropboxdata\Dropbox\work\matlab\software\toolboxes\CSD\resource\10-5-System_Mastoids_EGI129.csd',{EEG.chanlocs.labels}');
             [CSD.G,CSD.H] = GetGH(CSD.chanmat);
         end
         fprintf(1,['\' ...
@@ -76,31 +72,9 @@ for i_sub = 1:numel(F.sub2use)
     end
     % pop_eegplot(EEG,1,1,1)
 
-    %% %% do csd transform and check for head scaling
-    EEG1 = EEG;
-    EEG2 = EEG;
-    if F.CSD_flag==1
-        if  i_sub == 1 % calculate CSD matrix
-            CSD.chanmat=ExtractMontage('C:\Users\psy05cvd\Dropbox\work\matlab\software\toolboxes\CSD\resource\10-5-System_Mastoids_EGI129.csd',{EEG.chanlocs.labels}');
-%             CSD.chanmat=ExtractMontage('C:\Users\EEG\Documents\MATLAB\christopher\general_functions\CSD\resource\10-5-System_Mastoids_EGI129.csd',{EEG.chanlocs.labels}');
-            [CSD.G,CSD.H] = GetGH(CSD.chanmat);
-        end
-        fprintf(1,['\' ...
-            'n###\ncalculating CSD transform\n###\n'])
-        for i_tr = 1:EEG.trials
-            % csd of raw data
-            EEG1.data(:,:,i_tr)= CSDTransform(EEG1.data(:,:,i_tr), CSD.G, CSD.H,1.0e-5);
-            EEG2.data(:,:,i_tr)= CSDTransform(EEG2.data(:,:,i_tr), CSD.G, CSD.H,1.0e-5,100);
-        end
-    end
-    % pop_eegplot(EEG,1,1,1)
-    % pop_eegplot(EEG2,1,1,1)
-    % figure; plot(EEG.times,EEG.data(29,:,1)); hold on; plot(EEG.times,EEG2.data(29,:,1)); plot(EEG.times,EEG2.data(29,:,1)*5);
-    t.scale = EEG.data(29,:,1)./EEG2.data(29,:,1); median(t.scale); figure; plot(t.scale)
-    t.scale = EEG.data./EEG2.data(29,:,1); median(t.scale(:))
-    figure; histogram(t.scale,10000)
+    
 
-    %% additional calculation and conditiona allocation
+    %% additional calculation and condition allocation
     % raw (for FFT)
     % [EEG_ep, t.indices] = pop_epoch(EEG, num2cell(unique(cell2mat(F.trigger))), F.ERPepoch, 'epochinfo', 'yes');
     EEG_ep = pop_select(EEG, 'time', F.ERPepoch);
@@ -124,18 +98,17 @@ for i_sub = 1:numel(F.sub2use)
     % add some information
     t.ur_epoch = num2cell(t.prep_idx);
     [t.behavior.urepoch] = deal(t.ur_epoch{:});
-    [t.behavior.stim_luminance] = deal(F.conname_betweenlabel{F.sub2use(i_sub)});
-
+    
     % prune information to respective event (as more than one event could have been shown)
     for i_event = 1:numel(t.behavior)
         % index of event
         t.idx = prep_input.PreProc.trial_nreventintrial(t.prep_idx2(i_event));
-        % event type
-        t.behavior(i_event).eventtype = F.conname_withinlabel{t.behavior(i_event).eventtype(t.idx)};
         % event RDK
         t.behavior(i_event).eventRDK = t.behavior(i_event).eventRDK(t.idx);
+        % event type
+        t.behavior(i_event).eventtype2 = F.conname_withinlabel{t.behavior(i_event).eventtype2(t.idx)};
         % event color
-        t.behavior(i_event).eventcolor = behavior.RDK.RDK( t.behavior(i_event).eventRDK).colnames;
+        t.behavior(i_event).eventcolor = behavior.RDK.RDK( t.behavior(i_event).eventRDK).col_label;
         % event frequency
         t.behavior(i_event).eventfreq = behavior.RDK.RDK( t.behavior(i_event).eventRDK).freq;
         % event direction

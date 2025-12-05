@@ -180,7 +180,7 @@ t.idx = [1 2];
 % only two conditions primed vs unattended [1 3]
 t.idx = [1 3];
 % only two conditions nonprimed vs unattended [2 3]
-t.idx = [2 3];
+% t.idx = [2 3];
 
 [onset] = eeg_GaborStatOnsetCuSum(pl.testdata(:,t.idx,:,:),pl.basedata(:,t.idx,:,:), ...
     'datadims',{'time','cons','RDK','subs'}, ...

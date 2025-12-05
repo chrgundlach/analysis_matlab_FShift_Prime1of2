@@ -1,6 +1,6 @@
 %% plot TFA images
 clearvars
-F.PathInEEG             = '\\smbone.dom.uni-leipzig.de\FFL\AllgPsy\experimental_data\2025_FShift_Prime1of2\EEG\TFA'; % with FWHM 0.5
+F.PathInEEG             = '\\smbone.dom.uni-leipzig.de\FFL\AllgPsy\experimental_data\2025_FShift_Prime1of2\EEG\tfa_v3'; % with FWHM 0.5
 
 F.Subs                  = arrayfun(@(x) sprintf('%02.0f',x),1:70,'UniformOutput',false)';
 % F.Subs2use              = [1:13 15:21];
@@ -468,6 +468,8 @@ t.datestr = datestr(now,'mm-dd-yyyy_HH-MM');
 % write to textfile
 
 % writetable(R_Mat.all_table,fullfile(t.path,sprintf('FFT_Amp_data_CenterLarge_%s.csv',t.datestr)),'Delimiter',';')
+% writetable(R_Mat.all_table,fullfile(t.path,sprintf('FFT_Amp_data_CenterLarge_MoreTimeWins%s.csv',t.datestr)),'Delimiter',';')
+% writetable(R_Mat.all_table,fullfile(t.path,sprintf('FFT_Amp_data_CenterLarge_ShorterTimeWins%s.csv',t.datestr)),'Delimiter',';')
 
 
 % % test analysis
@@ -1025,10 +1027,12 @@ pl.elec2plot_i=logical(sum(cell2mat(cellfun(@(x) strcmpi({TFA.electrodes.labels}
 
 pl.freqrange=[-0.05 0.05];
 
-pl.xlims=[-1000 1700]; % index time 2 plot
+pl.xlims=[-1000 1800]; % index time 2 plot
 pl.xlims_i = dsearchn(TFA.time', pl.xlims');
 
-pl.time_post = [0 1700];
+pl.time_post = [0 1800];
+
+pl.timewins = [250 1000;1000 1750];
 
 pl.base = F.TFA.baseline;
 % pl.base = [-750 -250];
@@ -1269,6 +1273,33 @@ xlim(pl.xlims)
 xlabel('time in ms')
 
 
+% extract data from specific time windows
+[datout_evo_bc datout_evo] = deal([]);
+for i_win = 1:size(pl.timewins,1)
+    pl.timewins_i = dsearchn(TFA.time',pl.timewins(i_win,:)');
+    datout_evo_bc(i_win,:,:,:) = mean(pl.data_evo_bc(pl.timewins_i(1):pl.timewins_i(2),:,:,:),[1 3]);
+    datout_evo(i_win,:,:,:) = mean(pl.data_evo(pl.timewins_i(1):pl.timewins_i(2),:,:,:),[1 3]);
+end
+
+% extreact data for output to r
+% Create all combinations
+[out.T, out.C, out.P] = ndgrid(1:size(datout_evo_bc,1), 1:size(datout_evo_bc,2), 1:size(datout_evo_bc,3));
+out.timelabel = {sprintf('[%1.0f %1.0f]ms',pl.timewins(1:2)); sprintf('[%1.0f %1.0f]ms',pl.timewins(3:end))};
+out.datTable = table(categorical(pl.sub2plot(out.P(:))'), ... % paarticipants
+    categorical(out.timelabel(out.T(:))), ...
+    categorical(pl.conlabel(out.C(:))), ...
+    datout_evo_bc(:), ...
+    datout_evo(:), ...
+    repmat(vararg2str(pl.elec2plot),numel(out.T),1), ...
+    'VariableNames',["subjects","time","condition","modulation_evoked","amplitude_evoked","RDK_electrodes"]);
+
+t.path = 'C:\Dropboxdata\Dropbox\work\R-statistics\experiments\ssvep_fshiftprime1of2\data_in';
+% t.path = 'C:\Users\EEG\Documents\R\Christopher\analysis_R_ssvep_fshift_perirr\data_in';
+t.datestr = datestr(now,'mm-dd-yyyy_HH-MM');
+% write to textfile
+
+% writetable(out.datTable,fullfile(t.path,sprintf('Gabor_Amp_data_CenterLarge_ShorterTimeWins%s.csv',t.datestr)),'Delimiter',';')
+
 
 %% calculate everything with running t-tests and cluster correction | induced specified frequencies
 % plotting parameters
@@ -1297,10 +1328,10 @@ pl.elec2plot_i=logical(sum(cell2mat(cellfun(@(x) strcmpi({TFA.electrodes.labels}
 pl.freqrange=[24 30];
 % pl.freqrange=[11 13];
 
-pl.xlims=[-1000 1700]; % index time 2 plot
+pl.xlims=[-1000 1800]; % index time 2 plot
 pl.xlims_i = dsearchn(TFA.time', pl.xlims');
 
-pl.time_post = [0 1700];
+pl.time_post = [0 1800];
 
 pl.base = F.TFA.baseline;
 % pl.base = [-750 -250];
@@ -1484,20 +1515,12 @@ pl.contrasts = {
     {{'primed','nonprimed','not attended'};{[]}},'Total Activity M(P,NP,U)';
     };
 
-
-% averaged
-pl.contrasts = {
-    {{'primed','nonprimed'};{'not attended'}},'Selectivity (M(P,NP)-U)';
-    % {{'primed'};{'nonprimed'}},'Prime (P-NP)';
-    {{'primed','nonprimed','not attended'};{[]}},'Total Activity M(P,NP,U)';
-    };
-
 pl.freqrange=[-0.05 0.05];
 
-pl.xlims=[-1000 1700]; % index time 2 plot
+pl.xlims=[-1000 1800]; % index time 2 plot
 pl.xlims_i = dsearchn(TFA.time', pl.xlims');
 
-pl.time_post = [0 1700];
+pl.time_post = [0 1800];
 
 % pl.base = F.TFA.baseline;
 % pl.base = [-750 -250];
@@ -1767,6 +1790,7 @@ pl.time_post = [0 1800];
 
 pl.topotimewin =[-250 0; 0 250; 250 500; 500 750; 750 1000; 1000 1250; 1250 1500];
 pl.topotimewin =([0;250]+(-250:125:1250))';
+pl.topotimewin =[-500 -250; 250 1000; 1000 1750];
 
 pl.base = F.TFA.baseline;
 % pl.base = [-750 -250];
