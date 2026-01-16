@@ -158,7 +158,55 @@ topoplot(find(any(cell2mat(pl.elec2plot_i))),TFA(1).electrodes(1:64),'style','bl
     'emarker2',{find(any(cell2mat(pl.elec2plot_i),1)),'o','r',4,1});
 
 
+% exportgraphics(gcf,'figures/SSVEP_GrandMeanSpectraBaseline.pdf','ContentType','vector')
 
+%% plot grand mean Gabor data | spectra | for distinct frequencies (lookup of respective electrode cluster)
+
+% large center as in tango | periphery: central and lateral 
+pl.elec2plot = {{'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}, 'center'};
+pl.elec2plot = {{'P7';'P5';'P9';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P8';'P6';'PO4';'PO8';'P10';'O2';'I2'} 'center'};
+
+pl.elec2plot_i=cellfun(@(y) ...
+    logical(sum(cell2mat(cellfun(@(x) strcmpi({TFA.electrodes.labels},x), y, 'UniformOutput',false)),1)),...
+    pl.elec2plot(:,1), 'UniformOutput', false);
+
+pl.base = F.TFA.baseline;
+% pl.base = [-1000 -250];
+% pl.base = [-500 TFA.Gabor_FWHM_time];
+pl.base = [-500 -TFA.Gabor_FWHM_time];
+pl.base_i = dsearchn(TFA.time', pl.base');
+
+
+pl.sub2plot = 1:numel(F.Subs2use);
+pl.sub2plot(ismember(F.Subs2use,5))=[]; % participant 5 has no ssveps
+
+
+% extract data
+pl.data_evo = squeeze(mean(TFA.data_evo(:,pl.base_i(1):pl.base_i(2),pl.elec2plot_i{1},:,pl.sub2plot),[2,3,4]));
+
+
+% plotting
+figure;
+set(gcf,'Position',[100 100 600 300],'PaperPositionMode','auto')
+plot(TFA.frequency,pl.data_evo,'Color',[0.5 0.5 0.5],'LineWidth',1)
+hold on;
+plot(TFA.frequency,mean(pl.data_evo,2),'Color','k','LineWidth',2)
+
+xlim([0 35])
+xlabel('frequency in Hz')
+ylabel('amplitude in \muV/m²')
+title(sprintf('evoked GrandMean spectra for Gabor Transforms| N = %1.0f | FOI = %1.1f %1.1f %1.1f Hz', ...
+    numel(pl.sub2plot), F.SSVEP_Freqs),'Interpreter','none')
+vline(F.SSVEP_Freqs,'k:')
+box on
+
+% draw topography with electrode positions
+% h.a1 = axes('position',[0.72 0.56 0.2 0.2],'Visible','off');
+% topoplot(find(any(cell2mat(pl.elec2plot_i))),TFA(1).electrodes(1:64),'style','blank','electrodes', 'on','whitebk','on',...
+%     'emarker2',{find(any(cell2mat(pl.elec2plot_i),1)),'o','r',4,1});
+
+
+% exportgraphics(gcf,'figures/SSVEP_GrandMeanGaborSpectraBaseline.pdf','ContentType','vector')
 %% plot Grand Mean FFT data | topoplot for different frequencies
 pl.time2plot = [1:3];
 pl.time2plot = [1];
@@ -1044,7 +1092,7 @@ pl.RDKlabel = {'RDK1';'RDK2';'RDK3'};
 pl.RDKidx = [1 2 3];
 
 pl.con2plot = {'primed';'nonprimed';'not attended'}; %F.conRDKprimed_label(1,:)
-pl.concols = num2cell([255 133 4; 41 60 74; 25 138 131]'./255,1);
+pl.concols = num2cell([255 133 4; 25 138 131; 41 60 74;]'./255,1);
 
 % extract data
 for i_sub = 1:numel(pl.sub2plot)
@@ -1267,6 +1315,22 @@ ylim(pl.sign_y([1 end])+[-1 1])
 xlim(pl.xlims)
 
 xlabel('time in ms')
+
+% save data for analysis in R
+pl.idx = pl.xlims_i(1):pl.xlims_i(2);
+R_Mat.time = repmat(TFA.time(pl.idx)',[1,numel(pl.conlabel),numel(pl.sub2plot)]);
+R_Mat.con = repmat(pl.conlabel',[numel(pl.idx),1,numel(pl.sub2plot)]);
+R_Mat.sub = permute(repmat(F.Subs2use(pl.sub2plot)',[1, numel(pl.idx),numel(pl.conlabel)]),[2 3 1]);
+R_Mat.data = pl.data(pl.idx,:,:);
+R_Mat.all = table(R_Mat.time(:),R_Mat.con(:),R_Mat.sub(:),R_Mat.data(:), ...
+    'VariableNames',{'time';'condition';'participant';'SSVEP_mod'});
+
+t.path = 'C:\Dropboxdata\Dropbox\work\R-statistics\experiments\ssvep_fshiftprime1of2\data_in';
+% t.path = 'C:\Users\EEG\Documents\R\Christopher\analysis_R_ssvep_fshift_perirr\data_in';
+t.datestr = datestr(now,'mm-dd-yyyy_HH-MM');
+% write to textfile
+
+% writetable(R_Mat.all,fullfile(t.path,sprintf('Gabor_TimeCourses_%s.csv',t.datestr)),'Delimiter',';')
 
 
 
@@ -1492,6 +1556,13 @@ pl.contrasts = {
     {{'primed','nonprimed','not attended'};{[]}},'Total Activity M(P,NP,U)';
     };
 
+% summ
+pl.contrasts = {
+    {{'primed','nonprimed'};{'not attended'}},'Selectivity ((P+NP)-U)';
+    % {{'primed'};{'nonprimed'}},'Prime (P-NP)';
+    {{'primed','nonprimed','not attended'};{[]}},'Total Activity (P+NP+U)';
+    };
+
 pl.freqrange=[-0.05 0.05];
 
 pl.xlims=[-1000 1700]; % index time 2 plot
@@ -1548,37 +1619,37 @@ end
 % figure; plot(mean(pl.data_evo,[3,4]))
 pl.data = nan([size(pl.data_evo_bc,1), size(pl.contrasts,1) size(pl.data_evo_bc,4)]);
 
-% actual calculation of contrasts with average
-for i_cont = 1:size(pl.contrasts,1)
-    % calculate contrasts as specified
-    % first data
-    t.idx1 = ismember(pl.con2plot,pl.contrasts{i_cont,1}{1});
-    pl.xdata = squeeze(mean(pl.data_evo_bc(:,t.idx1,:,:),[2 3]));
-    % index second data
-    if ~isempty(pl.contrasts{i_cont,1}{2}{1})
-        t.idx2 = ismember(pl.con2plot,pl.contrasts{i_cont,1}{2});
-        pl.ydata = squeeze(mean(pl.data_evo_bc(:,t.idx2,:,:),[2 3]));
-        pl.data(:,i_cont,:) = pl.xdata - pl.ydata;
-    else
-        pl.data(:,i_cont,:) = pl.xdata;
-    end
-end
-
-% % actual calculation of contrasts with summation
+% % actual calculation of contrasts with average
 % for i_cont = 1:size(pl.contrasts,1)
 %     % calculate contrasts as specified
 %     % first data
 %     t.idx1 = ismember(pl.con2plot,pl.contrasts{i_cont,1}{1});
-%     pl.xdata = squeeze(sum(mean(pl.data_evo_bc(:,t.idx1,:,:),[3]),2));
+%     pl.xdata = squeeze(mean(pl.data_evo_bc(:,t.idx1,:,:),[2 3]));
 %     % index second data
 %     if ~isempty(pl.contrasts{i_cont,1}{2}{1})
 %         t.idx2 = ismember(pl.con2plot,pl.contrasts{i_cont,1}{2});
-%         pl.ydata = squeeze(sum(mean(pl.data_evo_bc(:,t.idx2,:,:),[3]),2));
+%         pl.ydata = squeeze(mean(pl.data_evo_bc(:,t.idx2,:,:),[2 3]));
 %         pl.data(:,i_cont,:) = pl.xdata - pl.ydata;
 %     else
 %         pl.data(:,i_cont,:) = pl.xdata;
 %     end
 % end
+
+% actual calculation of contrasts with summation
+for i_cont = 1:size(pl.contrasts,1)
+    % calculate contrasts as specified
+    % first data
+    t.idx1 = ismember(pl.con2plot,pl.contrasts{i_cont,1}{1});
+    pl.xdata = squeeze(sum(mean(pl.data_evo_bc(:,t.idx1,:,:),[3]),2));
+    % index second data
+    if ~isempty(pl.contrasts{i_cont,1}{2}{1})
+        t.idx2 = ismember(pl.con2plot,pl.contrasts{i_cont,1}{2});
+        pl.ydata = squeeze(sum(mean(pl.data_evo_bc(:,t.idx2,:,:),[3]),2));
+        pl.data(:,i_cont,:) = pl.xdata - pl.ydata;
+    else
+        pl.data(:,i_cont,:) = pl.xdata;
+    end
+end
 
 % running ttests
 t.time_rt = pl.time_post;
@@ -1695,6 +1766,7 @@ end
 %     text(pl.xlims(1)+diff(pl.xlims)*0.01,t.idx,[pl.conlabel{t.diffs(i_diff,1)} ' vs ' pl.conlabel{t.diffs(i_diff,2)}],'FontSize',8)
 % 
 % end
+grid on
 xlabel('time in ms')
 
 legend([h.pls{1:numel(pl.conlabel)}],pl.conlabel,'Location','SouthOutside','Orientation','horizontal')
@@ -1754,8 +1826,46 @@ ylim(pl.sign_y([1 end])+[-1 1])
 xlim(pl.xlims)
 
 xlabel('time in ms')
+% exportgraphics(gcf,'figures/SSVEP_mod_timecourse_selectivity_summ.pdf','ContentType','vector')
 
 
+%% plot grand mean topographies for all SSVEPs | RDKs
+pl.freq2plot = F.SSVEP_Freqs;
+pl.fidx = cell2mat(arrayfun(@(x) dsearchn(TFA.frequency',(x)'),pl.freq2plot,'UniformOutput',false));
+
+pl.time2plot = [-500 -TFA.Gabor_FWHM_time];
+pl.tidx = dsearchn(TFA.time', pl.time2plot');pl.tidx = pl.tidx(1):pl.tidx(2);
+
+pl.sub2plot = 1:numel(F.Subs2use);
+pl.sub2plot(ismember(F.Subs2use,5))=[]; % participant 5 has no ssveps
+
+
+pl.data_ind = squeeze(mean(TFA.data_ind(pl.fidx,pl.tidx,:,:,pl.sub2plot),[1,2,4,5]));
+pl.data_evo = squeeze(mean(TFA.data_evo(pl.fidx,pl.tidx,:,:,pl.sub2plot),[1,2,4,5]));
+
+pl.clim = [0 max(pl.data_ind); 0 max(pl.data_evo)];
+
+% actual plotting
+figure('Position',[100 100 250 250]);
+
+topoplot( pl.data_evo, TFA.electrodes(1:64), ...
+   'numcontour', 0, 'maplimits',pl.clim(2,:),'conv','on','colormap',fake_parula,'whitebk','on')
+% colormap(fake_parula)
+% colormap(parula)
+% colormap(jet)
+% colormap(turbo)
+% colormap(viridis)
+% colormap("nebula")
+% colormap("copper")
+% colormap(cbrewer2("PuBuGn"))
+colormap(cbrewer2("YlGnBu"))
+% colormap(flipud(cbrewer2("YlGnBu")))
+% colormap(cbrewer2("BuPu"))
+% colormap(cbrewer2("Greys"))
+colorbar
+
+% exportgraphics(gcf,'figures/SSVEP_GrandMeanTopoBaseline.pdf','ContentType','vector')
+% exportgraphics(gcf,'figures/SSVEP_GrandMeanTopoBaseline.pdf','ContentType','vector')
 
 %% plot time-resolved topographies | RDKs
 pl.freqrange=[-0.05 0.05];
