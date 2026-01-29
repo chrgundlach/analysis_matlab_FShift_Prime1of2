@@ -232,7 +232,7 @@ for i_con = 1:size(pl.data,2)
     % plot mean lines
     % h.plm{i_con}=plot(timevec, pl.data(:,i_con),'Color',pl.concols{i_con},'LineWidth',1);
 end
-% plot(timevec,pl.data)
+plot(timevec,pl.data)
 title('cusum z-values | condition shuffled data (early)')
 xlabel('time in ms')
 ylabel('standardized cumulative sum')
@@ -506,7 +506,7 @@ for i_jk = 1:size(jckknifeidx,2)
     jk.zdatacusum(:,:,:,:,i_jk) = cumsum(jk.zdata,1);
 
 end
-bsdata
+% bsdata
 %% jackknife approach | part 2: plot data | cumsum + CI of bootstrap samples
 pl.data = nan([size(zdatacusum,[1 3]) numel(cons2disp)]);
 % loop across RDKs and conditions

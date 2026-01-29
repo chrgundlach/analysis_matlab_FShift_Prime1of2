@@ -1559,9 +1559,16 @@ pl.contrasts = {
 % summ
 pl.contrasts = {
     {{'primed','nonprimed'};{'not attended'}},'Selectivity ((P+NP)-U)';
-    % {{'primed'};{'nonprimed'}},'Prime (P-NP)';
+    {{'primed','nonprimed'};{[]}},'Attention';
     {{'primed','nonprimed','not attended'};{[]}},'Total Activity (P+NP+U)';
     };
+
+% summ ! for manuscript
+% pl.contrasts = {
+%     {{'primed','nonprimed'};{'not attended'}},'Selectivity ((P+NP)-U)';
+%     % {{'primed'};{'nonprimed'}},'Prime (P-NP)';
+%     {{'primed','nonprimed','not attended'};{[]}},'Total Activity (P+NP+U)';
+%     };
 
 pl.freqrange=[-0.05 0.05];
 
@@ -1828,6 +1835,150 @@ xlim(pl.xlims)
 xlabel('time in ms')
 % exportgraphics(gcf,'figures/SSVEP_mod_timecourse_selectivity_summ.pdf','ContentType','vector')
 
+
+%% explorative: test the temporal difference between maxima and minima peaks?
+% plotting parameters
+% pl.elec2plot = {'Oz';'Iz'};
+% pl.elec2plot = {'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';
+% pl.elec2plot = {'P9';'P10';'PO7';'PO8';'PO3';'PO4';'POz';'O1';'O2';'Oz';'I1';'I2';'Iz'}; sav.chan_add = 'VisualLarge';% vis alpha II
+% pl.elec2plot = {'P5';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P6';'PO4';'PO8';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % as in tango study 
+pl.elec2plot = {'P7';'P5';'P9';'PO3';'PO7';'O1';'I1';'POz';'Oz';'Iz';'P8';'P6';'PO4';'PO8';'P10';'O2';'I2'}; sav.chan_add = 'VisualLarge'; % suppression irrelevant study[to be used]
+% cluster analysis
+% pl.elec2plot = {TFA.electrodes(1:64).labels}';
+% pl.elec2plot_i=logical(sum(cell2mat(cellfun(@(x) startsWith({TFA(1).electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1));
+pl.elec2plot_i=logical(sum(cell2mat(cellfun(@(x) strcmpi({TFA.electrodes.labels},x), pl.elec2plot, 'UniformOutput',false)),1));
+
+pl.freqrange=[-0.05 0.05];
+
+pl.xlims=[-1000 1700]; % index time 2 plot
+pl.xlims_i = dsearchn(TFA.time', pl.xlims');
+
+pl.time_post = [0 1700];
+
+pl.base = F.TFA.baseline;
+% pl.base = [-750 -250];
+pl.base = [-500 -TFA.Gabor_FWHM_time];
+pl.base_i = dsearchn(TFA.time', pl.base');
+
+pl.sub2plot = 1:numel(F.Subs2use);
+pl.sub2plot(ismember(F.Subs2use,5))=[]; % participant 5 has no ssveps
+
+
+pl.data_ind = []; pl.data_evo = []; pl.data_ind_bc = []; pl.data_evo_bc = [];
+pl.RDKlabel = {'RDK1';'RDK2';'RDK3'};
+pl.RDKidx = [1 2 3];
+
+pl.con2plot = {'primed';'nonprimed';'not attended'}; %F.conRDKprimed_label(1,:)
+pl.concols = num2cell([255 133 4; 25 138 131; 41 60 74;]'./255,1);
+
+% extract data
+for i_sub = 1:numel(pl.sub2plot)
+    t.fidx = cell2mat(arrayfun(@(x) dsearchn(TFA.frequency', x+pl.freqrange'),[TFA.RDK(pl.sub2plot(i_sub)).RDK(pl.RDKidx).freq],'UniformOutput',false));
+    pl.freqlabel = TFA.frequency(t.fidx(1,1):t.fidx(2,1))-TFA.RDK(pl.sub2plot(i_sub)).RDK(1).freq;
+    for i_RDK = 1:size(t.fidx,2)
+        for i_con = 1:numel(pl.con2plot)
+            % which condition
+            t.cidx = strcmp(F.conRDKprimed_label(:,i_RDK),pl.con2plot{i_con});
+            % raw
+            pl.data_ind(:,i_con,i_RDK,i_sub) = ...
+                squeeze(mean(TFA.data_ind(t.fidx(1,i_RDK):t.fidx(2,i_RDK),:,pl.elec2plot_i,t.cidx ,pl.sub2plot(i_sub)),[3,1]));
+            pl.data_evo(:,i_con,i_RDK,i_sub) = ...
+                squeeze(mean(TFA.data_evo(t.fidx(1,i_RDK):t.fidx(2,i_RDK),:,pl.elec2plot_i,t.cidx ,pl.sub2plot(i_sub)),[3,1]));
+            % baseline corrected
+            pl.data_ind_bc(:,i_con,i_RDK,i_sub) = ...
+                100*(...
+                bsxfun(@rdivide, pl.data_ind(:,i_con,i_RDK,i_sub), ...
+                squeeze(mean(TFA.data_ind(t.fidx(1,i_RDK):t.fidx(2,i_RDK),pl.base_i(1):pl.base_i(2),pl.elec2plot_i,t.cidx ,pl.sub2plot(i_sub)),[3,1,2]))')...
+                -1);
+            pl.data_evo_bc(:,i_con,i_RDK,i_sub) = ...
+                100*(...
+                bsxfun(@rdivide, pl.data_evo(:,i_con,i_RDK,i_sub), ...
+                squeeze(mean(TFA.data_evo(t.fidx(1,i_RDK):t.fidx(2,i_RDK),pl.base_i(1):pl.base_i(2),pl.elec2plot_i,t.cidx ,pl.sub2plot(i_sub)),[3,1,2]))')...
+                -1);
+        end
+    end
+end
+
+% identify time points of maxima and minima
+pl.realdata = squeeze(mean(pl.data_evo_bc,3));
+pl.time_post_idx = dsearchn(TFA.time',pl.time_post');
+pl.time_post_vec = TFA.time(pl.time_post_idx(1):pl.time_post_idx(2));
+[t.val t.t] = max(mean(pl.realdata(pl.time_post_idx(1):pl.time_post_idx(2),1,:),3));
+pl.r_maxprimed = pl.time_post_vec(t.t);
+[t.val t.t] = min(mean(pl.realdata(pl.time_post_idx(1):pl.time_post_idx(2),2,:),3));
+pl.r_minnonprimed = pl.time_post_vec(t.t);
+pl.r_tdiff = pl.r_maxprimed-pl.r_minnonprimed;
+
+% do this procedure for shuffled data
+t.permut_n = 5000;
+[pl.s_maxprimed pl.s_minnonprimed pl.s_tdiff] = deal(nan(t.permut_n,1));
+
+
+for i_shuffle = 1:t.permut_n
+    t.perm_data = pl.realdata;
+    % For each subject, decide randomly whether to flip the conditions (50/50 chance)
+    % rand(1, nSubjects) > 0.5 creates a logical array of 'flips'
+    t.flip_mask = rand(1, numel(pl.sub2plot)) > 0.5;
+
+    % Apply the flip to the second dimension (Conditions) for selected subjects
+    % We swap column 1 and 2 for the subjects where flip_mask is true
+    t.perm_data(:, :, t.flip_mask) = pl.realdata(:, [2,1,3], t.flip_mask);
+
+    % figure; subplot(2,1,1)
+    % plot(TFA.time,mean( t.perm_data,3)); legend
+    % subplot(2,1,2)
+    % plot(TFA.time,mean( pl.realdata,3)); legend
+
+    % find maxima and minima
+    t.perm_data_m = mean(t.perm_data,3);
+    % figure; plot(TFA.time,t.perm_data_m); legend
+    [t.val t.t] = max(t.perm_data_m(pl.time_post_idx(1):pl.time_post_idx(2),1,:));
+    pl.s_maxprimed(i_shuffle) = pl.time_post_vec(t.t);
+    [t.val t.t] = min(t.perm_data_m(pl.time_post_idx(1):pl.time_post_idx(2),1,:));
+    pl.s_minnonprimed(i_shuffle) = pl.time_post_vec(t.t);
+end
+pl.s_tdiff = pl.s_maxprimed-pl.s_minnonprimed;
+
+% figure; histogram(pl.s_tdiff,50); vline(pl.r_tdiff,'r')
+% figure; histogram(abs(pl.s_tdiff),50); vline(pl.r_tdiff,'r')
+% figure; histogram(pl.s_maxprimed,50); vline(pl.r_maxprimed,'r')
+% figure; histogram(pl.s_minnonprimed,50); vline(pl.r_minnonprimed,'r')
+
+
+% other approach correlate time courses?
+pl.realdata = squeeze(mean(pl.data_evo_bc,3));
+pl.time_post_idx = dsearchn(TFA.time',pl.time_post');
+pl.time_post_vec = TFA.time(pl.time_post_idx(1):pl.time_post_idx(2));
+pl.realdata_m = mean(pl.realdata(pl.time_post_idx(1):pl.time_post_idx(2),1:2,:),3);
+pl.r_xcorr_r = corr(pl.realdata_m(:,1), pl.realdata_m(:,2));
+
+pl.s_xcorr_r = nan(1,t.permut_n);
+pl.sdata_m = nan([size(pl.realdata_m) t.permut_n]);
+for i_shuffle = 1:t.permut_n
+    t.perm_data = pl.realdata;
+    % For each subject, decide randomly whether to flip the conditions (50/50 chance)
+    % rand(1, nSubjects) > 0.5 creates a logical array of 'flips'
+    t.flip_mask = rand(1, numel(pl.sub2plot)) > 0.5;
+
+    % Apply the flip to the second dimension (Conditions) for selected subjects
+    % We swap column 1 and 2 for the subjects where flip_mask is true
+    % t.perm_data(:, :, t.flip_mask) = pl.realdata(:, [2,1,3], t.flip_mask);
+    t.perm_data(:, :, t.flip_mask) = pl.realdata(:, [1,3,2], t.flip_mask);
+
+    % figure; subplot(2,1,1)
+    % plot(TFA.time,mean( t.perm_data,3)); legend
+    % subplot(2,1,2)
+    % plot(TFA.time,mean( pl.realdata,3)); legend
+
+    % pl.sdata_m(:,:,i_shuffle) = mean(t.perm_data(pl.time_post_idx(1):pl.time_post_idx(2),1:2,:),3);
+    pl.sdata_m(:,:,i_shuffle) = mean(t.perm_data(pl.time_post_idx(1):pl.time_post_idx(2),[2 3],:),3);
+    pl.s_xcorr_r(i_shuffle) = corr(pl.sdata_m(:,1,i_shuffle), pl.sdata_m(:,2,i_shuffle));
+end
+pl.r_xcorr_p = (sum(abs(pl.r_xcorr_r)<abs(pl.s_xcorr_r))+1)/(t.permut_n+1);
+% figure; scatter(pl.realdata_m(:,1), pl.realdata_m(:,2))
+% figure; scatter(reshape(pl.sdata_m(:,1,1:100),[],1), reshape(pl.sdata_m(:,2,1:100),[],1))
+% figure; histogram(pl.s_xcorr_r,100); vline(pl.r_xcorr_r,'r')
+% figure; histogram(abs(pl.s_xcorr_r),100); vline(abs(pl.r_xcorr_r),'r')
 
 %% plot grand mean topographies for all SSVEPs | RDKs
 pl.freq2plot = F.SSVEP_Freqs;

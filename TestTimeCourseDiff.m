@@ -178,7 +178,7 @@ pl.rdkfreqs = cell2mat(arrayfun(@(x) [TFA.RDK(x).RDK(1:3).freq]',pl.sub2plot,'Un
 % only two conditions primed vs nonprimed [1 2]
 t.idx = [1 2];
 % only two conditions primed vs unattended [1 3]
-t.idx = [1 3];
+% t.idx = [1 3];
 % only two conditions nonprimed vs unattended [2 3]
 % t.idx = [2 3];
 
@@ -191,7 +191,7 @@ t.idx = [1 3];
 
 
 
-
+%%
 % running ttests
 t.time_rt = pl.time_post;
 t.time_rt_i = dsearchn(TFA.time', t.time_rt');
