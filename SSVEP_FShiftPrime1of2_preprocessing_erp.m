@@ -17,7 +17,7 @@ p.chanlocs_path=    'C:\Dropboxdata\Dropbox\work\matlab\Auswertungsskripte\Analy
 p.mean_path=        [p.path 'eeg\mean\'];
 p.subs=             cellfun(@(x) sprintf('%02.0f',x),num2cell(1:60),'UniformOutput', false)';
 p.subs2use=         [1:14 16:28];%
-p.subs2use=         [2];%
+% p.subs2use=         [2];%
 p.part=             {'1';'2';'3'};
 p.cue =          {[10 11 12 ]; ... %att RDK1+2
                     [20 21 22]; ... %att RDK2+3
